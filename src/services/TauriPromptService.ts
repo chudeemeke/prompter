@@ -20,7 +20,7 @@ export class TauriPromptService implements PromptService {
   }
 
   async copyAndPaste(text: string, auto_paste: boolean): Promise<void> {
-    return invoke('copy_and_paste', { text, auto_paste: auto_paste });
+    return invoke('copy_and_paste', { text, autoPaste: auto_paste });
   }
 
   async hideAndRestore(): Promise<void> {
@@ -28,6 +28,6 @@ export class TauriPromptService implements PromptService {
   }
 
   async recordUsage(id: string): Promise<void> {
-    return invoke('record_usage', { prompt_id: id });
+    return invoke('record_usage', { promptId: id });
   }
 }
