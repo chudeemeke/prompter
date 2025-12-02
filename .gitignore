@@ -55,3 +55,4 @@ src-tauri/WixTools/
 
 # Testing
 .vitest/
+nul

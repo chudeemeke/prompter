@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tauri::Manager;
 
 /// Copy text, hide window, restore focus, optionally paste
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn copy_and_paste(
     app: tauri::AppHandle,
     text: String,
@@ -43,7 +43,7 @@ pub async fn copy_and_paste(
 }
 
 /// Show window and remember current focus
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn show_window(app: tauri::AppHandle) -> Result<(), String> {
     let window_manager = Arc::new(WindowsFocusTracker::new());
 
@@ -64,7 +64,7 @@ pub async fn show_window(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 /// Just hide window and restore focus (for Escape key)
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn hide_window(app: tauri::AppHandle) -> Result<(), String> {
     let window = app
         .get_webview_window("main")

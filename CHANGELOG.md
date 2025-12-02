@@ -58,6 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Temporarily disabled MockPromptService in App.tsx
   - Enables actual Rust backend calls for clipboard and paste operations
   - Allows end-to-end testing of window focus tracking and auto-paste
+- Fixed Tauri parameter naming properly with engineering approach:
+  - Discovered Tauri default converts snake_case (Rust) → camelCase (JavaScript)
+  - Added `#[tauri::command(rename_all = "snake_case")]` to ALL commands
+  - Maintains snake_case consistency across entire codebase (TypeScript + Rust)
+  - Applied to 9 commands: get_all_prompts, get_prompt, search_prompts, save_prompt, record_usage, copy_and_paste, show_window, hide_window
+  - Reference: https://stackoverflow.com/questions/78432685/why-does-tauri-modify-the-parameter-names-of-invoked-functions
 
 #### Testing
 - All tests passing: 346/353 (7 intentionally skipped)
