@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+src-tauri/target/
+
+# Build outputs
+dist/
+build/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Rust
+**/*.rs.bk
+Cargo.lock
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+
+# User-specific data (prompts are personal)
+~/.prompter/
+
+# Vite cache
+.vite/
+
+# Testing
+.vitest/
