@@ -68,10 +68,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Increased delay from 50ms to 150ms after window focus restoration
   - Allows target applications (like Notepad++) time to process focus events
   - Paste simulation now works reliably across different applications
-- Fixed Enter key not working in variable modal:
-  - Added keyboard event handler to prevent main window's keyboard listener from interfering
-  - Form submission now works correctly when pressing Enter in modal inputs
-  - Escape key closes modal as expected
+- Fixed Enter key not working in variable modal (PROPER FIX):
+  - Root cause: Global keyboard handler called preventDefault() at window level
+  - Solution: Disable global keyboard handler when modal is open (enabled parameter)
+  - Form submission now works correctly when pressing Enter
+  - Removed unnecessary stopPropagation workaround
+- Fixed auto-paste not actually pasting (PROPER FIX):
+  - Root cause: Batched SendInput calls with no delays between keypresses
+  - Solution: Send each keypress individually with 5ms delays
+  - Ctrl-down, V-down, V-up, Ctrl-up now sent as separate events
+  - Works reliably with applications like Notepad++ that need timing
 
 #### Testing
 - All tests passing: 346/353 (7 intentionally skipped)

@@ -9,6 +9,7 @@ interface ContextModalProps {
 
 /**
  * Modal for entering variable values for prompts with variables
+ * Global keyboard handler is DISABLED when this modal is open
  */
 export function ContextModal({ prompt, onConfirm, onCancel }: ContextModalProps) {
   const [values, setValues] = useState<Record<string, string>>(() => {
@@ -27,15 +28,12 @@ export function ContextModal({ prompt, onConfirm, onCancel }: ContextModalProps)
     console.log('[ContextModal] onConfirm completed');
   };
 
-  // Prevent keyboard events from bubbling to main window handler
+  // Handle Escape key to close modal
   const handleKeyDown = (e: KeyboardEvent) => {
-    // Let Escape close the modal
     if (e.key === 'Escape') {
+      e.preventDefault();
       onCancel();
-      return;
     }
-    // Stop propagation to prevent main keyboard handler from interfering
-    e.stopPropagation();
   };
 
   return (

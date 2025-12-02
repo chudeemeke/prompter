@@ -21,8 +21,9 @@ export function SpotlightWindow({ service }: SpotlightWindowProps) {
   const state = useSpotlightState(service);
   const filteredPrompts = useSearch(prompts, state.query);
 
-  // Keyboard navigation
+  // Keyboard navigation - DISABLED when modal is open
   useKeyboard({
+    enabled: !state.showContextModal,  // ← Disable when modal is open
     onArrowUp: () => state.moveSelection('up', filteredPrompts.length - 1),
     onArrowDown: () => state.moveSelection('down', filteredPrompts.length - 1),
     onEnter: () => {

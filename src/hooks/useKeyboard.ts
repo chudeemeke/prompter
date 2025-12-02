@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 interface UseKeyboardOptions {
+  enabled?: boolean;  // ← New: allows disabling the handler
   onArrowUp: () => void;
   onArrowDown: () => void;
   onEnter: () => void;
@@ -13,6 +14,7 @@ interface UseKeyboardOptions {
  * Reusable across components
  */
 export function useKeyboard({
+  enabled = true,  // ← Default to enabled
   onArrowUp,
   onArrowDown,
   onEnter,
@@ -20,6 +22,11 @@ export function useKeyboard({
   onTab,
 }: UseKeyboardOptions) {
   useEffect(() => {
+    // Don't attach handler if disabled
+    if (!enabled) {
+      return;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowUp':
@@ -49,5 +56,5 @@ export function useKeyboard({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onArrowUp, onArrowDown, onEnter, onEscape, onTab]);
+  }, [enabled, onArrowUp, onArrowDown, onEnter, onEscape, onTab]);
 }
