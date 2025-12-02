@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed SSH configuration for GitHub access on Windows:
   - Disabled IPQoS (not supported on Windows OpenSSH)
   - Disabled ControlMaster (unreliable on Windows, works in WSL2/Linux)
+- Fixed Vite configuration for junction points with spaces in path:
+  - Added preserveSymlinks: true to vite.config.ts
+  - Allows dev server to work from C:\dev\prompter junction point
+  - Prevents resolving to iCloud path with "AI Tools" and "Anthropic Solution" spaces
+- Switched to TauriPromptService for paste functionality testing:
+  - Temporarily disabled MockPromptService in App.tsx
+  - Enables actual Rust backend calls for clipboard and paste operations
+  - Allows end-to-end testing of window focus tracking and auto-paste
 
 #### Testing
 - All tests passing: 346/353 (7 intentionally skipped)
