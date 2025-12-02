@@ -14,23 +14,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Successfully built Tauri application
 - Added system tray icon with menu (Show, Settings, Quit)
 - Implemented tray icon click handlers
-- Added comprehensive logging for debugging
+- Added comprehensive logging for debugging throughout the call chain:
+  - Frontend: ContextModal, useSpotlightState hook
+  - Backend: copy_and_paste command, WindowsFocusTracker
 - Created Settings plan document (docs/design/SETTINGS_PLAN.md)
 - Created User Guide documentation (docs/USER_GUIDE.md)
 - Created .gitignore for proper version control
 - Initial commit pushed to GitHub: https://github.com/chudeemeke/prompter
+- Added Testing Pyramid documentation to ~/.claude/CLAUDE.md
+  - Unit (60-70%), Integration (20-30%), Contract (optional), E2E (5-10%)
+  - Real-world Prompter example showing integration test gap
+  - Enforcement strategies and decision matrix
 
 #### Changed - Configuration & UX
 - Changed hotkey from Ctrl+Shift+Space to Ctrl+Space (simpler, faster)
 - Fixed window focus tracking: only remember window when opened from tray, NOT on startup
-- Fixed snake_case/camelCase parameter mismatches between TypeScript and Rust
+- Fixed snake_case/camelCase parameter mismatches across entire TypeScript codebase (16+ fields)
+  - Types: autoPaste → auto_paste, createdAt → created_at, updatedAt → updated_at
+  - Stats: promptId → prompt_id, useCount → use_count, lastUsed → last_used
+  - Config: promptsDir → prompts_dir, showInTray → show_in_tray, maxResults → max_results
+  - UI: isVisible → is_visible, selectedIndex → selected_index, showVariableModal → show_variable_modal
 - Added temporary "show on startup" for testing (to be removed after hotkey fixed)
+- Reorganized project structure following WoW (Ways of Working) standards:
+  - Moved batch files to scripts/ directory
+  - Moved PLAN.md to docs/planning/
+  - Deleted temporary status files (PRODUCTION_STATUS.md, PROJECT_STATUS_SUMMARY.md, AGENT_B_FILES.txt)
+  - Created docs/TODO.md for tracking technical debt
 
 #### Fixed - Critical Issues
 - Fixed all Rust compiler warnings
 - Fixed YAML parsing to load all prompts correctly
-- Fixed parameter naming: autoPaste → auto_paste, promptId → prompt_id
+- Fixed parameter naming: autoPaste → auto_paste, promptId → prompt_id (and 16+ other fields)
 - Fixed window focus issue: prevented remembering CMD window on startup
+- Fixed Vite cache corruption issue causing JavaScript execution failures
+- Fixed SSH configuration for GitHub access on Windows:
+  - Disabled IPQoS (not supported on Windows OpenSSH)
+  - Disabled ControlMaster (unreliable on Windows, works in WSL2/Linux)
 
 #### Testing
 - All tests passing: 346/353 (7 intentionally skipped)
