@@ -42,3 +42,4 @@ pub async fn record_usage(prompt_id: String) -> Result<(), String> {
     let mut use_case = RecordUsageUseCase::new(frecency);
     use_case.execute(&PromptId::new(prompt_id))
 }
+

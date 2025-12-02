@@ -46,7 +46,8 @@
       "Bash(scripts/run-tauri.bat)",
       "Bash(git revert:*)",
       "Bash(git stash:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"(gc prompts.rs) | Set-Content prompts.rs\")"
     ],
     "deny": [],
     "ask": []

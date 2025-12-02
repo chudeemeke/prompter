@@ -64,6 +64,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Maintains snake_case consistency across entire codebase (TypeScript + Rust)
   - Applied to 9 commands: get_all_prompts, get_prompt, search_prompts, save_prompt, record_usage, copy_and_paste, show_window, hide_window
   - Reference: https://stackoverflow.com/questions/78432685/why-does-tauri-modify-the-parameter-names-of-invoked-functions
+- Fixed auto-paste timing issue:
+  - Increased delay from 50ms to 150ms after window focus restoration
+  - Allows target applications (like Notepad++) time to process focus events
+  - Paste simulation now works reliably across different applications
+- Fixed Enter key not working in variable modal:
+  - Added keyboard event handler to prevent main window's keyboard listener from interfering
+  - Form submission now works correctly when pressing Enter in modal inputs
+  - Escape key closes modal as expected
 
 #### Testing
 - All tests passing: 346/353 (7 intentionally skipped)

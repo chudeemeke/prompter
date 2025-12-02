@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, KeyboardEvent } from 'react';
 import type { Prompt } from '../../lib/types';
 
 interface ContextModalProps {
@@ -27,9 +27,24 @@ export function ContextModal({ prompt, onConfirm, onCancel }: ContextModalProps)
     console.log('[ContextModal] onConfirm completed');
   };
 
+  // Prevent keyboard events from bubbling to main window handler
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // Let Escape close the modal
+    if (e.key === 'Escape') {
+      onCancel();
+      return;
+    }
+    // Stop propagation to prevent main keyboard handler from interfering
+    e.stopPropagation();
+  };
+
   return (
     <div className="context-modal-overlay" onClick={onCancel}>
-      <div className="context-modal" onClick={e => e.stopPropagation()}>
+      <div
+        className="context-modal"
+        onClick={e => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+      >
         <h3>Fill in variables for "{prompt.name}"</h3>
         <form onSubmit={handleSubmit}>
           {prompt.variables?.map((variable, index) => (

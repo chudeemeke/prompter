@@ -40,8 +40,11 @@ impl PastePromptUseCase {
 
         // Step 4: Optionally simulate paste
         if auto_paste {
+            // Wait for target window to be ready (150ms works better for apps like Notepad++)
+            log::info!("PastePromptUseCase: Waiting for target window to be ready...");
+            tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
+
             log::info!("PastePromptUseCase: Simulating paste (Ctrl+V)");
-            tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
             self.input_simulator.simulate_paste()?;
             log::info!("PastePromptUseCase: Paste simulation successful");
         } else {
