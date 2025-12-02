@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added comprehensive logging for debugging
 - Created Settings plan document (docs/design/SETTINGS_PLAN.md)
 - Created User Guide documentation (docs/USER_GUIDE.md)
+- Created .gitignore for proper version control
+- Initial commit pushed to GitHub: https://github.com/chudeemeke/prompter
 
 #### Changed - Configuration & UX
 - Changed hotkey from Ctrl+Shift+Space to Ctrl+Space (simpler, faster)
