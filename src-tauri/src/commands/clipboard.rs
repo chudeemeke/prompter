@@ -79,9 +79,3 @@ pub async fn hide_window(app: tauri::AppHandle) -> Result<(), String> {
 
     Ok(())
 }
-
-/// Debug logging command to trace frontend execution
-#[tauri::command]
-pub fn debug_log(message: String) {
-    log::info!("[FRONTEND DEBUG] {}", message);
-}

@@ -38,12 +38,7 @@
       "Bash(find:*)",
       "Bash({} +)",
       "Bash(npm run test:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(gh repo create:*)",
-      "Bash(git push:*)",
-      "Bash(chmod:*)",
-      "Bash(scripts/run-tauri.bat)"
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

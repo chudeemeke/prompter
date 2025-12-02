@@ -82,7 +82,6 @@ pub fn run() {
       commands::clipboard::copy_and_paste,
       commands::clipboard::show_window,
       commands::clipboard::hide_window,
-      commands::clipboard::debug_log,
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {
