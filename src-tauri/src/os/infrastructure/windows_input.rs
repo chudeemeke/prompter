@@ -33,8 +33,12 @@ impl InputSimulator for WindowsInputSimulator {
         // Send each key press/release pair individually with small delays
         // This is more reliable than batching all inputs together
 
+        log::info!("simulate_keys: Starting key sequence for {} keys", keys.len());
+        let start_time = std::time::Instant::now();
+
         // Press all keys (key down events)
         for key in keys {
+            log::info!("simulate_keys: Pressing key {:?} at +{}ms", key, start_time.elapsed().as_millis());
             let input = INPUT {
                 r#type: INPUT_KEYBOARD,
                 Anonymous: windows::Win32::UI::Input::KeyboardAndMouse::INPUT_0 {
@@ -49,16 +53,21 @@ impl InputSimulator for WindowsInputSimulator {
             };
 
             let result = unsafe { SendInput(&[input], std::mem::size_of::<INPUT>() as i32) };
+            log::info!("simulate_keys: SendInput result for key down: {} at +{}ms", result, start_time.elapsed().as_millis());
             if result != 1 {
                 return Err(format!("SendInput failed for key down: sent {}/1 inputs", result));
             }
 
             // Small delay between key presses (5ms)
+            log::info!("simulate_keys: Sleeping 5ms after key down at +{}ms", start_time.elapsed().as_millis());
             std::thread::sleep(std::time::Duration::from_millis(5));
+            log::info!("simulate_keys: Sleep complete at +{}ms", start_time.elapsed().as_millis());
         }
 
         // Release all keys in reverse order (key up events)
+        log::info!("simulate_keys: Starting key release sequence at +{}ms", start_time.elapsed().as_millis());
         for key in keys.iter().rev() {
+            log::info!("simulate_keys: Releasing key {:?} at +{}ms", key, start_time.elapsed().as_millis());
             let input = INPUT {
                 r#type: INPUT_KEYBOARD,
                 Anonymous: windows::Win32::UI::Input::KeyboardAndMouse::INPUT_0 {
@@ -73,14 +82,18 @@ impl InputSimulator for WindowsInputSimulator {
             };
 
             let result = unsafe { SendInput(&[input], std::mem::size_of::<INPUT>() as i32) };
+            log::info!("simulate_keys: SendInput result for key up: {} at +{}ms", result, start_time.elapsed().as_millis());
             if result != 1 {
                 return Err(format!("SendInput failed for key up: sent {}/1 inputs", result));
             }
 
             // Small delay between key releases (5ms)
+            log::info!("simulate_keys: Sleeping 5ms after key up at +{}ms", start_time.elapsed().as_millis());
             std::thread::sleep(std::time::Duration::from_millis(5));
+            log::info!("simulate_keys: Sleep complete at +{}ms", start_time.elapsed().as_millis());
         }
 
+        log::info!("simulate_keys: Key sequence completed at +{}ms", start_time.elapsed().as_millis());
         Ok(())
     }
 }

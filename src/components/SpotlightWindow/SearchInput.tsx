@@ -31,7 +31,7 @@ export function SearchInput({ value, onChange, placeholder = "Search prompts..."
         className="search-input"
       />
       {value && (
-        <button onClick={() => onChange('')} className="clear-button">
+        <button type="button" onClick={() => onChange('')} className="clear-button">
           <X size={18} />
         </button>
       )}

@@ -22,31 +22,42 @@ export function useKeyboard({
   onTab,
 }: UseKeyboardOptions) {
   useEffect(() => {
+    console.log('[useKeyboard] Effect running, enabled:', enabled);
+
     // Don't attach handler if disabled
     if (!enabled) {
+      console.log('[useKeyboard] Handler DISABLED - not attaching event listener');
       return;
     }
 
+    console.log('[useKeyboard] Handler ENABLED - attaching event listener');
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      console.log('[useKeyboard] Key pressed:', e.key, 'target:', e.target);
       switch (e.key) {
         case 'ArrowUp':
+          console.log('[useKeyboard] ArrowUp - calling preventDefault and handler');
           e.preventDefault();
           onArrowUp();
           break;
         case 'ArrowDown':
+          console.log('[useKeyboard] ArrowDown - calling preventDefault and handler');
           e.preventDefault();
           onArrowDown();
           break;
         case 'Enter':
+          console.log('[useKeyboard] Enter - calling preventDefault and handler');
           e.preventDefault();
           onEnter();
           break;
         case 'Escape':
+          console.log('[useKeyboard] Escape - calling preventDefault and handler');
           e.preventDefault();
           onEscape();
           break;
         case 'Tab':
           if (onTab) {
+            console.log('[useKeyboard] Tab - calling preventDefault and handler');
             e.preventDefault();
             onTab();
           }
@@ -55,6 +66,10 @@ export function useKeyboard({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    console.log('[useKeyboard] Event listener attached to window');
+    return () => {
+      console.log('[useKeyboard] Cleanup - removing event listener from window');
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [enabled, onArrowUp, onArrowDown, onEnter, onEscape, onTab]);
 }

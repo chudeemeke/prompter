@@ -26,6 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Real-world Prompter example showing integration test gap
   - Enforcement strategies and decision matrix
 
+#### Added - Debugging & Verification
+- Added comprehensive verification logging for self-testing (2025-12-02):
+  - Frontend: useKeyboard hook logs enabled/disabled state transitions
+  - Frontend: ContextModal logs lifecycle, Enter key events, form submission
+  - Backend: windows_input.rs logs SendInput timing with millisecond precision
+  - Enables verification of Enter key fix and auto-paste timing issues
+
 #### Changed - Configuration & UX
 - Changed hotkey from Ctrl+Shift+Space to Ctrl+Space (simpler, faster)
 - Fixed window focus tracking: only remember window when opened from tray, NOT on startup
@@ -47,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed parameter naming: autoPaste → auto_paste, promptId → prompt_id (and 16+ other fields)
 - Fixed window focus issue: prevented remembering CMD window on startup
 - Fixed Vite cache corruption issue causing JavaScript execution failures
+- Fixed React warning: Added type="button" to SearchInput clear button (2025-12-02)
 - Fixed SSH configuration for GitHub access on Windows:
   - Disabled IPQoS (not supported on Windows OpenSSH)
   - Disabled ControlMaster (unreliable on Windows, works in WSL2/Linux)

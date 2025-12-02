@@ -1,4 +1,4 @@
-import { useState, FormEvent, KeyboardEvent } from 'react';
+import { useState, FormEvent, KeyboardEvent, useEffect } from 'react';
 import type { Prompt } from '../../lib/types';
 
 interface ContextModalProps {
@@ -12,11 +12,21 @@ interface ContextModalProps {
  * Global keyboard handler is DISABLED when this modal is open
  */
 export function ContextModal({ prompt, onConfirm, onCancel }: ContextModalProps) {
+  console.log('[ContextModal] Component mounted for prompt:', prompt.name);
+
+  useEffect(() => {
+    console.log('[ContextModal] useEffect - modal is now visible');
+    return () => {
+      console.log('[ContextModal] useEffect cleanup - modal is being unmounted');
+    };
+  }, []);
+
   const [values, setValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     prompt.variables?.forEach(v => {
       initial[v.name] = v.default || '';
     });
+    console.log('[ContextModal] Initial values:', initial);
     return initial;
   });
 
@@ -30,9 +40,13 @@ export function ContextModal({ prompt, onConfirm, onCancel }: ContextModalProps)
 
   // Handle Escape key to close modal
   const handleKeyDown = (e: KeyboardEvent) => {
+    console.log('[ContextModal] handleKeyDown called, key:', e.key, 'target:', e.target);
     if (e.key === 'Escape') {
+      console.log('[ContextModal] Escape pressed - closing modal');
       e.preventDefault();
       onCancel();
+    } else if (e.key === 'Enter') {
+      console.log('[ContextModal] Enter pressed - should trigger form submission');
     }
   };
 
