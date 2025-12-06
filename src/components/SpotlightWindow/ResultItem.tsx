@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import type { Prompt } from '../../lib/types';
+import { DynamicIcon } from '../shared/IconPicker';
 
 interface ResultItemProps {
   prompt: Prompt;
@@ -35,7 +36,7 @@ export const ResultItem = memo(function ResultItem({
       aria-selected={isSelected ? 'true' : 'false'}
     >
       <div className="result-icon" style={iconStyle}>
-        {prompt.icon}
+        <DynamicIcon icon={prompt.icon} size={20} />
       </div>
       <div className="result-content">
         <div className="result-name" data-testid="result-name">{prompt.name}</div>

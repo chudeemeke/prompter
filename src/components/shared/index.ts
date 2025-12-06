@@ -8,7 +8,7 @@ export { Select } from './Select';
 export { Tabs, TabPanel, useTabs } from './Tabs';
 export { Modal, ConfirmDialog } from './Modal';
 export { TagInput } from './TagInput';
-export { IconPicker, getIconComponent } from './IconPicker';
+export { IconPicker, getIconComponent, DynamicIcon, isLucideIcon } from './IconPicker';
 export type { IconName } from './IconPicker';
 export { ColorPicker, getColorName } from './ColorPicker';
 export type { ColorValue } from './ColorPicker';
