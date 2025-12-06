@@ -174,6 +174,9 @@ describe('useFocusTrap', () => {
       // Unmount the hook
       unmount();
 
+      // Wait for async focus restoration (requestAnimationFrame)
+      await new Promise(resolve => requestAnimationFrame(resolve));
+
       // Focus should be restored to outside button
       expect(document.activeElement).toBe(outsideButton);
 

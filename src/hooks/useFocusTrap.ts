@@ -15,11 +15,25 @@ export function useFocusTrap<T extends HTMLElement>(
   // Store the previously focused element to restore on unmount
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
+  // Track if we've captured the previously focused element
+  // This must happen during render phase (before autoFocus is applied)
+  const hasCaptured = useRef(false);
+
+  // Capture the focused element during render phase, before autoFocus runs
+  // This is critical because autoFocus is applied during React's commit phase,
+  // which happens before useEffect but after the render phase
+  if (active && !hasCaptured.current) {
+    previouslyFocusedElement.current = document.activeElement as HTMLElement;
+    hasCaptured.current = true;
+  }
+
+  // Reset capture flag when becoming inactive
+  if (!active && hasCaptured.current) {
+    hasCaptured.current = false;
+  }
+
   useEffect(() => {
     if (!active) return;
-
-    // Store the current focused element
-    previouslyFocusedElement.current = document.activeElement as HTMLElement;
 
     const container = containerRef.current;
     if (!container) return;
@@ -80,8 +94,16 @@ export function useFocusTrap<T extends HTMLElement>(
     // Cleanup: restore focus to previously focused element
     return () => {
       container.removeEventListener('keydown', handleKeyDown);
-      if (previouslyFocusedElement.current && typeof previouslyFocusedElement.current.focus === 'function') {
-        previouslyFocusedElement.current.focus();
+      const elementToFocus = previouslyFocusedElement.current;
+      if (elementToFocus && typeof elementToFocus.focus === 'function') {
+        // Use requestAnimationFrame to ensure DOM is updated before focusing
+        // Then use a microtask to ensure React has finished reconciliation
+        requestAnimationFrame(() => {
+          // Double-check element is still in the DOM and focusable
+          if (document.body.contains(elementToFocus)) {
+            elementToFocus.focus();
+          }
+        });
       }
     };
   }, [containerRef, active]);

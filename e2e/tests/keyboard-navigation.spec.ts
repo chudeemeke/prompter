@@ -67,7 +67,7 @@ test.describe('Keyboard Navigation', () => {
       }
     });
 
-    test('should return focus to search input after modal closes', async ({ spotlightPage }) => {
+    test('should return focus to search input after modal closes', async ({ spotlightPage, page }) => {
       await spotlightPage.navigate();
 
       const resultCount = await spotlightPage.getResultCount();
@@ -82,8 +82,11 @@ test.describe('Keyboard Navigation', () => {
           // Wait for modal to close
           await expect(spotlightPage.contextModal).not.toBeVisible();
 
+          // Wait for focus restoration (async via requestAnimationFrame)
+          await page.waitForTimeout(100);
+
           // Focus should return to search input
-          await expect(spotlightPage.searchInput).toBeFocused();
+          await expect(spotlightPage.searchInput).toBeFocused({ timeout: 2000 });
         }
       }
     });
