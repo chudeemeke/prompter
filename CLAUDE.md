@@ -312,6 +312,63 @@ feat(data): implement hexagonal architecture for prompt storage
 Follows SOLID principles, dependency inversion, repository pattern
 ```
 
+## Build, Release, and Publishing
+
+**CRITICAL**: ALWAYS use `aidev` commands instead of raw npm/pnpm/bun for releases and publishing.
+
+### Release Workflow
+
+```bash
+# ALWAYS use aidev for releases (handles quality gates automatically)
+aidev release patch    # Bump patch version (0.1.0 -> 0.1.1)
+aidev release minor    # Bump minor version (0.1.0 -> 0.2.0)
+aidev release major    # Bump major version (0.1.0 -> 1.0.0)
+
+# With options
+aidev release patch --dry-run     # Preview what would happen
+aidev release patch --no-push     # Don't push to remote
+aidev release patch --tag-prefix v  # Use 'v' prefix (v0.1.1)
+```
+
+**What `aidev release` does automatically:**
+1. Runs all tests (blocks if failing)
+2. Checks coverage thresholds (blocks if < 95%)
+3. Runs security audit (blocks if vulnerabilities)
+4. Runs docTruth validation (blocks if docs outdated)
+5. Bumps version in package.json
+6. Creates git tag
+7. Pushes to remote
+
+### Publishing Workflow
+
+```bash
+# ALWAYS use aidev for npm publishing
+aidev publish           # Publish to npm
+aidev publish --dry-run # Preview what would be published
+aidev publish --access public  # For scoped packages
+
+# For Tauri builds (after aidev release)
+scripts\build-tauri.bat  # Windows native build
+```
+
+### Why aidev over raw npm?
+
+- **Quality gates enforced**: Tests, coverage, security, docs validation
+- **Consistent versioning**: Follows semantic versioning
+- **Clean commits**: Proper version commit format
+- **No accidents**: Blocks releases with failing quality checks
+
+### Development Commands
+
+```bash
+# For development, still use npm/bun directly:
+npm run dev            # Start dev server
+npm run test           # Run tests
+npm run build          # Build frontend
+npm run tauri dev      # Run Tauri in dev mode
+npm run tauri:build    # Build production binary
+```
+
 ## Time Management
 
 **CRITICAL**: Do NOT rush ANY task irrespective of token or time constraints.

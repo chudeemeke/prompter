@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0-rc",
   "productName": "prompter",
-  "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "version": "1.0.0",
+  "identifier": "com.prompter.app",
   "build": {
     "frontendDist": "../dist",
     "beforeDevCommand": "npm run dev",
@@ -11,6 +11,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Prompter",
         "width": 700,
         "height": 500,
@@ -21,22 +22,101 @@
         "alwaysOnTop": true,
         "center": true,
         "visible": false,
-        "skipTaskbar": true
+        "skipTaskbar": true,
+        "url": "/"
+      },
+      {
+        "label": "editor",
+        "title": "Prompt Editor",
+        "width": 900,
+        "height": 700,
+        "minWidth": 600,
+        "minHeight": 400,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true,
+        "visible": false,
+        "skipTaskbar": false,
+        "url": "/editor"
+      },
+      {
+        "label": "settings",
+        "title": "Prompter Settings",
+        "width": 600,
+        "height": 500,
+        "minWidth": 400,
+        "minHeight": 300,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true,
+        "visible": false,
+        "skipTaskbar": false,
+        "url": "/settings"
+      },
+      {
+        "label": "analytics",
+        "title": "Prompter Analytics",
+        "width": 800,
+        "height": 600,
+        "minWidth": 600,
+        "minHeight": 400,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true,
+        "visible": false,
+        "skipTaskbar": false,
+        "url": "/analytics"
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ipc: tauri:"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/chudeemeke/prompter/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["msi", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Prompter",
+    "shortDescription": "A Spotlight-style prompt manager for Windows",
+    "longDescription": "Prompter is a fast, keyboard-driven prompt manager that helps you quickly access and paste your frequently used text snippets, code templates, and prompts.",
+    "category": "Productivity",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": null,
+      "nsis": {
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico",
+        "installMode": "currentUser",
+        "languages": ["English"]
+      }
+    }
   }
 }

@@ -1,17 +1,17 @@
 [package]
-name = "app"
+name = "prompter"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "A Spotlight-style prompt manager for Windows"
+authors = ["Chude <chude@emeke.org>"]
+license = "MIT"
+repository = "https://github.com/chudeemeke/prompter"
 edition = "2021"
 rust-version = "1.71"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+name = "prompter_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -27,9 +27,13 @@ tauri-plugin-log = "2.0.0-rc"
 tauri-plugin-shell = "2.0.0-rc"
 tauri-plugin-global-shortcut = "2.0.0-rc"
 tauri-plugin-clipboard-manager = "2.0.0-rc"
+tauri-plugin-autostart = "2.0.0-rc"
+tauri-plugin-updater = "2.0.0-rc"
+tauri-plugin-process = "2.0.0-rc"
 fuzzy-matcher = "0.3"
 walkdir = "2.4"
 chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4"] }
 thiserror = "1.0"
 tokio = { version = "1", features = ["time"] }
 once_cell = "1"
@@ -43,4 +47,5 @@ windows = { version = "0.58", features = [
     "Win32_Foundation",
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_System_Threading",
 ] }

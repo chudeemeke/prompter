@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import type { Prompt } from '../lib/types';
 import type { PromptService } from '../services/PromptService';
+import { useToastContextSafe } from '../context';
+import { loggers } from '../lib/logger';
+
+const log = loggers.hooks.spotlightState;
 
 /**
  * Centralized state management for Spotlight window
@@ -11,6 +15,7 @@ export function useSpotlightState(service: PromptService) {
   const [selected_index, setSelectedIndex] = useState(0);
   const [showContextModal, setShowContextModal] = useState(false);
   const [selected_prompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const toast = useToastContextSafe();
 
   const selectPrompt = useCallback((prompt: Prompt) => {
     if (prompt.variables && prompt.variables.length > 0) {
@@ -26,35 +31,59 @@ export function useSpotlightState(service: PromptService) {
 
   const handlePromptSelection = useCallback(
     async (prompt: Prompt, variables: Record<string, string>) => {
-      console.log('[useSpotlightState] handlePromptSelection called', { prompt_id: prompt.id, variables });
+      log.debug('handlePromptSelection called', { prompt_id: prompt.id, variables });
 
       try {
         // Substitute variables in content
         let content = prompt.content;
         Object.entries(variables).forEach(([key, value]) => {
-          content = content.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+          // Escape special regex characters in variable names to prevent regex injection
+          const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          content = content.replace(new RegExp(`\\{\\{${escapedKey}\\}\\}`, 'g'), value);
         });
-        console.log('[useSpotlightState] Content after substitution:', content.substring(0, 100));
+        log.debug('Content after substitution:', content.substring(0, 100));
 
         // Record usage for frecency
-        console.log('[useSpotlightState] Recording usage...');
+        log.debug('Recording usage...');
         await service.recordUsage(prompt.id);
-        console.log('[useSpotlightState] Usage recorded');
+        log.debug('Usage recorded');
 
-        // Copy and paste (fixed: use auto_paste instead of auto_paste)
-        console.log('[useSpotlightState] Calling copyAndPaste...', { auto_paste: prompt.auto_paste });
-        await service.copyAndPaste(content, prompt.auto_paste);
-        console.log('[useSpotlightState] copyAndPaste completed');
+        // Copy and paste
+        log.debug('Calling copyAndPaste...', { auto_paste: prompt.auto_paste });
+        const result = await service.copyAndPaste(content, prompt.auto_paste);
+        log.debug('copyAndPaste completed', result);
 
         // Close modal
         setShowContextModal(false);
         setSelectedPrompt(null);
+
+        // Show toast based on result
+        if (!result.clipboard_success) {
+          // Clipboard failed - show error
+          toast?.error('Copy failed', result.message);
+        } else if (result.paste_likely_success) {
+          // Everything worked - show success
+          toast?.success(result.message, `"${prompt.name}" is ready to use`);
+        } else if (result.paste_attempted) {
+          // Paste was tried but uncertain - show info with hint
+          toast?.info(result.message, `"${prompt.name}" - press Ctrl+V if needed`);
+        } else {
+          // Auto-paste disabled - show success for copy
+          toast?.success(result.message, `"${prompt.name}" is ready to use`);
+        }
       } catch (error) {
-        console.error('[useSpotlightState] Error in handlePromptSelection:', error);
-        throw error;
+        log.error('Error in handlePromptSelection:', error);
+
+        // Show error toast
+        const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+        toast?.error('Failed to paste', errorMessage);
+
+        // Close modal even on error so user can retry
+        setShowContextModal(false);
+        setSelectedPrompt(null);
       }
     },
-    [service]
+    [service, toast]
   );
 
   const closeWindow = useCallback(async () => {

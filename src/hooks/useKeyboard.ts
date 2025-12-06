@@ -7,6 +7,9 @@ interface UseKeyboardOptions {
   onEnter: () => void;
   onEscape: () => void;
   onTab?: () => void;
+  onEdit?: () => void;     // Ctrl+E to edit selected prompt
+  onNew?: () => void;      // Ctrl+N to create new prompt
+  onSettings?: () => void; // Ctrl+, to open settings
 }
 
 /**
@@ -20,6 +23,9 @@ export function useKeyboard({
   onEnter,
   onEscape,
   onTab,
+  onEdit,
+  onNew,
+  onSettings,
 }: UseKeyboardOptions) {
   useEffect(() => {
     console.log('[useKeyboard] Effect running, enabled:', enabled);
@@ -62,6 +68,32 @@ export function useKeyboard({
             onTab();
           }
           break;
+        case 'e':
+        case 'E':
+          // Alt+E to edit selected prompt
+          if (e.altKey && !e.ctrlKey && onEdit) {
+            console.log('[useKeyboard] Alt+E - calling preventDefault and edit handler');
+            e.preventDefault();
+            onEdit();
+          }
+          break;
+        case 'n':
+        case 'N':
+          // Alt+N to create new prompt
+          if (e.altKey && !e.ctrlKey && onNew) {
+            console.log('[useKeyboard] Alt+N - calling preventDefault and new handler');
+            e.preventDefault();
+            onNew();
+          }
+          break;
+        case ',':
+          // Alt+, to open settings
+          if (e.altKey && !e.ctrlKey && onSettings) {
+            console.log('[useKeyboard] Alt+, - calling preventDefault and settings handler');
+            e.preventDefault();
+            onSettings();
+          }
+          break;
       }
     };
 
@@ -71,5 +103,5 @@ export function useKeyboard({
       console.log('[useKeyboard] Cleanup - removing event listener from window');
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [enabled, onArrowUp, onArrowDown, onEnter, onEscape, onTab]);
+  }, [enabled, onArrowUp, onArrowDown, onEnter, onEscape, onTab, onEdit, onNew, onSettings]);
 }

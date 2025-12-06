@@ -61,6 +61,11 @@ impl FilePromptRepository {
     fn get_prompt_path(&self, id: &PromptId) -> PathBuf {
         self.prompts_dir.join(id.as_str())
     }
+
+    /// Get the prompts directory path
+    pub fn get_prompts_dir(&self) -> &PathBuf {
+        &self.prompts_dir
+    }
 }
 
 impl PromptRepository for FilePromptRepository {
@@ -140,6 +145,7 @@ mod tests {
             tags: vec!["test".to_string()],
             variables: vec![],
             auto_paste: false,
+            is_favorite: false,
             created_at: "2025-01-01T00:00:00Z".to_string(),
             updated_at: "2025-01-01T00:00:00Z".to_string(),
         }

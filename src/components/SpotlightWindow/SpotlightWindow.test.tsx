@@ -15,6 +15,7 @@ const createMockPrompt = (id: string, overrides?: Partial<Prompt>): Prompt => ({
   tags: ['test'],
   variables: [],
   auto_paste: true,
+  is_favorite: false,
   created_at: '2025-11-30T10:00:00Z',
   updated_at: '2025-11-30T10:00:00Z',
   ...overrides,
@@ -33,6 +34,10 @@ const createMockService = (): PromptService => ({
   getPrompt: vi.fn().mockImplementation((id: string) =>
     Promise.resolve(createMockPrompt(id))
   ),
+  createPrompt: vi.fn().mockResolvedValue(createMockPrompt('new')),
+  updatePrompt: vi.fn().mockResolvedValue(createMockPrompt('1')),
+  deletePrompt: vi.fn().mockResolvedValue(undefined),
+  duplicatePrompt: vi.fn().mockResolvedValue(createMockPrompt('dup')),
   searchPrompts: vi.fn().mockImplementation((query: string) => {
     const allPrompts = [
       createMockPrompt('1', { name: 'Email Template', description: 'Quick email' }),
@@ -60,9 +65,53 @@ const createMockService = (): PromptService => ({
       filtered.map((prompt) => ({ prompt, score: 1, highlights: {} }))
     );
   }),
-  copyAndPaste: vi.fn().mockResolvedValue(undefined),
-  hideAndRestore: vi.fn().mockResolvedValue(undefined),
+  getPromptsByFolder: vi.fn().mockResolvedValue([]),
+  getPromptsByTag: vi.fn().mockResolvedValue([]),
+  getFavoritePrompts: vi.fn().mockResolvedValue([]),
+  getFolders: vi.fn().mockResolvedValue([]),
+  createFolder: vi.fn().mockResolvedValue({ id: 'f1', name: 'Test', parent_id: undefined }),
+  deleteFolder: vi.fn().mockResolvedValue(undefined),
+  getTags: vi.fn().mockResolvedValue([]),
+  toggleFavorite: vi.fn().mockResolvedValue(true),
+  getVersionHistory: vi.fn().mockResolvedValue([]),
+  restoreVersion: vi.fn().mockResolvedValue(createMockPrompt('1')),
   recordUsage: vi.fn().mockResolvedValue(undefined),
+  getUsageStats: vi.fn().mockResolvedValue({
+    prompt_id: '1',
+    total_uses: 0,
+    last_used: null,
+    daily_uses: [],
+    weekly_uses: [],
+    monthly_uses: [],
+  }),
+  copyAndPaste: vi.fn().mockResolvedValue({
+    clipboard_success: true,
+    paste_attempted: true,
+    paste_likely_success: true,
+    message: 'Copied and pasted',
+  }),
+  hideAndRestore: vi.fn().mockResolvedValue(undefined),
+  getConfig: vi.fn().mockResolvedValue({
+    hotkey: 'Ctrl+Space',
+    theme: 'dark',
+    auto_paste_default: true,
+    show_in_tray: true,
+  }),
+  updateConfig: vi.fn().mockResolvedValue({
+    hotkey: 'Ctrl+Space',
+    theme: 'dark',
+    auto_paste_default: true,
+    show_in_tray: true,
+  }),
+  exportPrompt: vi.fn().mockResolvedValue(''),
+  importPrompt: vi.fn().mockResolvedValue(createMockPrompt('imported')),
+  openEditorWindow: vi.fn().mockResolvedValue(undefined),
+  openSettingsWindow: vi.fn().mockResolvedValue(undefined),
+  openAnalyticsWindow: vi.fn().mockResolvedValue(undefined),
+  closeWindow: vi.fn().mockResolvedValue(undefined),
+  enableAutostart: vi.fn().mockResolvedValue(undefined),
+  disableAutostart: vi.fn().mockResolvedValue(undefined),
+  isAutostartEnabled: vi.fn().mockResolvedValue(false),
 });
 
 describe('SpotlightWindow Integration Tests', () => {
@@ -755,6 +804,95 @@ describe('SpotlightWindow Integration Tests', () => {
       await waitFor(() => {
         expect(service.copyAndPaste).toHaveBeenCalledWith('Test content', true);
         expect(service.recordUsage).toHaveBeenCalledWith('3');
+      });
+    });
+
+    it('should select prompt with Tab key', async () => {
+      const user = userEvent.setup();
+      render(<SpotlightWindow service={service} />);
+      await waitForPromptsToLoad();
+
+      await waitFor(() => {
+        expect(screen.getByText('Email Template')).toBeInTheDocument();
+      });
+
+      // Press Tab to select the first prompt (which has no variables)
+      await user.keyboard('{Tab}');
+
+      // Verify prompt was executed
+      await waitFor(() => {
+        expect(service.copyAndPaste).toHaveBeenCalledWith('Test content', true);
+        expect(service.recordUsage).toHaveBeenCalledWith('1');
+      });
+    });
+
+    it('should open modal when Tab is pressed on prompt with variables', async () => {
+      const user = userEvent.setup();
+      render(<SpotlightWindow service={service} />);
+      await waitForPromptsToLoad();
+
+      await waitFor(() => {
+        expect(screen.getByText('Email Template')).toBeInTheDocument();
+      });
+
+      // Navigate to Code Review which has variables
+      await user.keyboard('{ArrowDown}');
+
+      // Press Tab to open modal
+      await user.keyboard('{Tab}');
+
+      // Modal should appear
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Error State', () => {
+    it('should show error state when service fails', async () => {
+      const errorService = createMockService();
+      errorService.getAllPrompts = vi.fn().mockRejectedValue(new Error('Network error'));
+
+      render(<SpotlightWindow service={errorService} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Unable to load prompts')).toBeInTheDocument();
+        expect(screen.getByText('Network error')).toBeInTheDocument();
+      });
+
+      // Try Again button should be present
+      expect(screen.getByText('Try Again')).toBeInTheDocument();
+    });
+
+    it('should reload page when Try Again is clicked', async () => {
+      const user = userEvent.setup();
+      const errorService = createMockService();
+      errorService.getAllPrompts = vi.fn().mockRejectedValue(new Error('Network error'));
+
+      // Mock window.location.reload
+      const reloadMock = vi.fn();
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { ...originalLocation, reload: reloadMock },
+      });
+
+      render(<SpotlightWindow service={errorService} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Try Again')).toBeInTheDocument();
+      });
+
+      // Click Try Again
+      await user.click(screen.getByText('Try Again'));
+
+      // Reload should have been called
+      expect(reloadMock).toHaveBeenCalled();
+
+      // Restore original location
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
       });
     });
   });

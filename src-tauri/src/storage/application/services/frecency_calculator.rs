@@ -9,12 +9,20 @@ use std::path::PathBuf;
 /// Manages usage tracking and scoring
 #[derive(Debug, Clone)]
 pub struct FrecencyCalculator {
-    usage_data: HashMap<String, UsageData>,
+    usage_data: HashMap<String, InternalUsageData>,
     storage_path: PathBuf,
 }
 
+/// Public usage data returned to API consumers
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct UsageData {
+pub struct UsageData {
+    pub use_count: u32,
+    pub last_used: String,
+}
+
+/// Internal storage format with DateTime
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct InternalUsageData {
     use_count: u32,
     last_used: DateTime<Utc>,
 }
@@ -41,7 +49,7 @@ impl FrecencyCalculator {
         Ok(storage_dir.join("usage.json"))
     }
 
-    fn load_from_disk(path: &PathBuf) -> Result<HashMap<String, UsageData>, String> {
+    fn load_from_disk(path: &PathBuf) -> Result<HashMap<String, InternalUsageData>, String> {
         if !path.exists() {
             return Ok(HashMap::new());
         }
@@ -65,7 +73,7 @@ impl FrecencyCalculator {
         let entry = self
             .usage_data
             .entry(id.as_str().to_string())
-            .or_insert(UsageData {
+            .or_insert(InternalUsageData {
                 use_count: 0,
                 last_used: Utc::now(),
             });
@@ -85,6 +93,14 @@ impl FrecencyCalculator {
                 score.calculate()
             })
             .unwrap_or(0.0)
+    }
+
+    /// Get usage data for a prompt (public API)
+    pub fn get_usage(&self, id: &str) -> Option<UsageData> {
+        self.usage_data.get(id).map(|data| UsageData {
+            use_count: data.use_count,
+            last_used: data.last_used.to_rfc3339(),
+        })
     }
 
     pub fn sort_by_frecency(&self, prompts: &mut [Prompt]) {
@@ -185,6 +201,7 @@ mod tests {
             tags: vec![],
             variables: vec![],
             auto_paste: false,
+            is_favorite: false,
             created_at: "2025-01-01T00:00:00Z".to_string(),
             updated_at: "2025-01-01T00:00:00Z".to_string(),
         }

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import type { Prompt } from '../../lib/types';
 
 interface ResultItemProps {
@@ -8,23 +9,36 @@ interface ResultItemProps {
 }
 
 /**
- * Display a single prompt result item
+ * Display a single prompt result item.
+ * Memoized to prevent unnecessary re-renders when prompt data hasn't changed.
  */
-export function ResultItem({ prompt, isSelected, onClick, onMouseEnter }: ResultItemProps) {
+export const ResultItem = memo(function ResultItem({
+  prompt,
+  isSelected,
+  onClick,
+  onMouseEnter,
+}: ResultItemProps) {
+  // Memoize inline style to prevent object recreation on each render
+  const iconStyle = useMemo(
+    () => ({ backgroundColor: prompt.color || '#6B7280' }),
+    [prompt.color]
+  );
+
   return (
     <div
       className={`result-item ${isSelected ? 'selected' : ''}`}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
+      data-testid="result-item"
+      data-selected={isSelected ? 'true' : 'false'}
+      role="option"
+      aria-selected={isSelected ? 'true' : 'false'}
     >
-      <div
-        className="result-icon"
-        style={{ backgroundColor: prompt.color || '#6B7280' }}
-      >
+      <div className="result-icon" style={iconStyle}>
         {prompt.icon}
       </div>
       <div className="result-content">
-        <div className="result-name">{prompt.name}</div>
+        <div className="result-name" data-testid="result-name">{prompt.name}</div>
         {prompt.description && (
           <div className="result-description">{prompt.description}</div>
         )}
@@ -39,4 +53,4 @@ export function ResultItem({ prompt, isSelected, onClick, onMouseEnter }: Result
       )}
     </div>
   );
-}
+});

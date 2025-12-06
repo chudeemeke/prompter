@@ -5,9 +5,9 @@ use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 #[cfg(target_os = "windows")]
-use windows::Win32::Foundation::HWND;
+use windows::Win32::Foundation::{GetLastError, HWND};
 #[cfg(target_os = "windows")]
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, SetForegroundWindow};
+use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, IsWindow, SetForegroundWindow};
 
 #[cfg(target_os = "windows")]
 static PREVIOUS_WINDOW: Lazy<Mutex<Option<isize>>> = Lazy::new(|| Mutex::new(None));
@@ -44,14 +44,37 @@ impl WindowManager for WindowsFocusTracker {
             log::info!("WindowsFocusTracker: Attempting to restore window handle: 0x{:X}", hwnd_val);
             unsafe {
                 let hwnd = HWND(hwnd_val as *mut _);
-                let result = SetForegroundWindow(hwnd);
-                if result.as_bool() {
-                    log::info!("WindowsFocusTracker: Successfully restored window focus");
-                    Ok(())
-                } else {
-                    log::error!("WindowsFocusTracker: SetForegroundWindow failed");
-                    Err("Failed to restore previous window".to_string())
+
+                // Validate HWND before attempting to use it
+                if !IsWindow(hwnd).as_bool() {
+                    log::error!("WindowsFocusTracker: Invalid window handle (window may have been closed)");
+                    return Err(format!("Invalid window handle: 0x{:X}", hwnd_val));
                 }
+                log::info!("WindowsFocusTracker: HWND validated successfully");
+
+                // Attempt to set foreground window
+                let result = SetForegroundWindow(hwnd);
+                if !result.as_bool() {
+                    let error = GetLastError();
+                    log::error!("WindowsFocusTracker: SetForegroundWindow failed with error: {:?}", error);
+                    return Err(format!("SetForegroundWindow failed: {:?}", error));
+                }
+                log::info!("WindowsFocusTracker: SetForegroundWindow returned success");
+
+                // Verify focus actually changed (retry up to 5 times with 20ms delays)
+                for attempt in 0..5 {
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                    let current = GetForegroundWindow();
+                    if current == hwnd {
+                        log::info!("WindowsFocusTracker: Focus verified after {} attempt(s)", attempt + 1);
+                        return Ok(());
+                    }
+                    log::warn!("WindowsFocusTracker: Focus not yet verified, attempt {}/5", attempt + 1);
+                }
+
+                // Focus verification failed after all retries
+                log::error!("WindowsFocusTracker: Focus verification failed after 5 attempts");
+                Err("Focus verification failed - window didn't gain focus".to_string())
             }
         } else {
             log::error!("WindowsFocusTracker: No previous window saved");

@@ -14,6 +14,7 @@ const createMockPrompt = (overrides?: Partial<Prompt>): Prompt => ({
   tags: ['test'],
   variables: [],
   auto_paste: true,
+  is_favorite: false,
   created_at: '2025-11-30T10:00:00Z',
   updated_at: '2025-11-30T10:00:00Z',
   ...overrides,

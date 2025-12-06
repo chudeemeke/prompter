@@ -14,6 +14,7 @@ const createMockPrompt = (id: string, overrides?: Partial<Prompt>): Prompt => ({
   tags: ['test'],
   variables: [],
   auto_paste: true,
+  is_favorite: false,
   created_at: '2025-11-30T10:00:00Z',
   updated_at: '2025-11-30T10:00:00Z',
   ...overrides,
@@ -26,17 +27,47 @@ beforeEach(() => {
 
 describe('ResultsList', () => {
   describe('Empty State', () => {
-    it('should show no results message when results array is empty', () => {
+    it('should show no results message when results array is empty (has prompts)', () => {
       render(
         <ResultsList
           results={[]}
           selected_index={0}
           onSelect={vi.fn()}
           onHover={vi.fn()}
+          hasPrompts={true}
         />
       );
-      expect(screen.getByText('No prompts found')).toBeInTheDocument();
-      expect(screen.getByText('Try a different search term')).toBeInTheDocument();
+      expect(screen.getByText('No results found')).toBeInTheDocument();
+      expect(screen.getByText('Try searching for a prompt name or description')).toBeInTheDocument();
+    });
+
+    it('should show contextual message with search query', () => {
+      render(
+        <ResultsList
+          results={[]}
+          selected_index={0}
+          onSelect={vi.fn()}
+          onHover={vi.fn()}
+          hasPrompts={true}
+          searchQuery="test query"
+        />
+      );
+      expect(screen.getByText('No results found')).toBeInTheDocument();
+      expect(screen.getByText('No prompts match "test query"')).toBeInTheDocument();
+    });
+
+    it('should show no prompts message when hasPrompts is false', () => {
+      render(
+        <ResultsList
+          results={[]}
+          selected_index={0}
+          onSelect={vi.fn()}
+          onHover={vi.fn()}
+          hasPrompts={false}
+        />
+      );
+      expect(screen.getByText('No prompts yet')).toBeInTheDocument();
+      expect(screen.getByText(/Create your first prompt/)).toBeInTheDocument();
     });
 
     it('should not render results list when empty', () => {
@@ -60,7 +91,31 @@ describe('ResultsList', () => {
           onHover={vi.fn()}
         />
       );
-      expect(container.querySelector('.no-results')).toBeInTheDocument();
+      expect(container.querySelector('.empty-state')).toBeInTheDocument();
+    });
+
+    it('should render empty state icon', () => {
+      const { container } = render(
+        <ResultsList
+          results={[]}
+          selected_index={0}
+          onSelect={vi.fn()}
+          onHover={vi.fn()}
+        />
+      );
+      expect(container.querySelector('.empty-state-icon')).toBeInTheDocument();
+    });
+
+    it('should have data-testid for empty state', () => {
+      render(
+        <ResultsList
+          results={[]}
+          selected_index={0}
+          onSelect={vi.fn()}
+          onHover={vi.fn()}
+        />
+      );
+      expect(screen.getByTestId('empty-state')).toBeInTheDocument();
     });
   });
 
@@ -454,11 +509,12 @@ describe('ResultsList', () => {
           selected_index={0}
           onSelect={vi.fn()}
           onHover={vi.fn()}
+          hasPrompts={true}
         />
       );
 
       expect(screen.queryByText('Prompt 1')).not.toBeInTheDocument();
-      expect(screen.getByText('No prompts found')).toBeInTheDocument();
+      expect(screen.getByText('No results found')).toBeInTheDocument();
     });
 
     it('should transition from empty state to results', () => {
@@ -468,10 +524,11 @@ describe('ResultsList', () => {
           selected_index={0}
           onSelect={vi.fn()}
           onHover={vi.fn()}
+          hasPrompts={true}
         />
       );
 
-      expect(screen.getByText('No prompts found')).toBeInTheDocument();
+      expect(screen.getByText('No results found')).toBeInTheDocument();
 
       rerender(
         <ResultsList
@@ -482,7 +539,7 @@ describe('ResultsList', () => {
         />
       );
 
-      expect(screen.queryByText('No prompts found')).not.toBeInTheDocument();
+      expect(screen.queryByText('No results found')).not.toBeInTheDocument();
       expect(screen.getByText('Prompt 1')).toBeInTheDocument();
     });
 

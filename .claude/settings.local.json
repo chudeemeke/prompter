@@ -47,7 +47,14 @@
       "Bash(git revert:*)",
       "Bash(git stash:*)",
       "Bash(findstr:*)",
-      "Bash(powershell -Command \"(gc prompts.rs) | Set-Content prompts.rs\")"
+      "Bash(powershell -Command \"(gc prompts.rs) | Set-Content prompts.rs\")",
+      "Bash(powershell \"Get-Content src-tauri\\src\\os\\infrastructure\\windows_focus.rs -Head 15\")",
+      "Bash(timeout:*)",
+      "Bash(tasklist.exe)",
+      "Bash(scriptsrun-tauri.bat)",
+      "Bash(npm ls:*)",
+      "Bash(\"C:\\Users\\Destiny\\.cargo\\bin\\cargo.exe\" check)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

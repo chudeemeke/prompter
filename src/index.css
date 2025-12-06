@@ -2,19 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =============================================================================
+   CSS VARIABLES - Light Mode (Default)
+   ============================================================================= */
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1F2937;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Light mode colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f3f4f6;
+  --color-bg-tertiary: #e5e7eb;
+  --color-bg-hover: #f9fafb;
+  --color-bg-selected: rgba(59, 130, 246, 0.1);
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+
+  --color-border: #e5e7eb;
+  --color-border-subtle: #f3f4f6;
+
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+
+  color-scheme: light;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+/* =============================================================================
+   CSS VARIABLES - Dark Mode
+   ============================================================================= */
+
+.dark {
+  /* Dark mode colors */
+  --color-bg-primary: #111827;
+  --color-bg-secondary: #1f2937;
+  --color-bg-tertiary: #374151;
+  --color-bg-hover: #1f2937;
+  --color-bg-selected: rgba(59, 130, 246, 0.2);
+
+  --color-text-primary: rgba(255, 255, 255, 0.95);
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+
+  --color-border: #374151;
+  --color-border-subtle: #1f2937;
+
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+
+  color-scheme: dark;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 }
 
 body {
@@ -32,33 +80,48 @@ body {
 
 /* Window container */
 .spotlight-window {
-  @apply flex flex-col w-full h-full bg-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden border border-gray-700/50;
+  @apply flex flex-col w-full h-full backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  opacity: 0.98;
 }
 
 /* Loading/Error states */
 .loading, .error {
-  @apply flex items-center justify-center h-full text-gray-400;
+  @apply flex items-center justify-center h-full;
+  color: var(--color-text-muted);
 }
 
 .error {
-  @apply text-red-400;
+  @apply text-red-500 dark:text-red-400;
 }
 
 /* Search input */
 .search-input-container {
-  @apply flex items-center gap-3 px-4 py-3 border-b border-gray-700/50;
+  @apply flex items-center gap-3 px-4 py-3;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .search-icon {
-  @apply text-gray-400;
+  color: var(--color-text-muted);
 }
 
 .search-input {
-  @apply flex-1 bg-transparent text-white text-lg placeholder-gray-500 outline-none;
+  @apply flex-1 bg-transparent text-lg outline-none;
+  color: var(--color-text-primary);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-muted);
 }
 
 .clear-button {
-  @apply p-1 text-gray-500 hover:text-gray-300 transition-colors;
+  @apply p-1 transition-colors;
+  color: var(--color-text-muted);
+}
+
+.clear-button:hover {
+  color: var(--color-text-secondary);
 }
 
 /* Results list */
@@ -67,21 +130,24 @@ body {
 }
 
 .no-results {
-  @apply py-8 text-center text-gray-400;
+  @apply py-8 text-center;
+  color: var(--color-text-muted);
 }
 
 /* Result item */
 .result-item {
-  @apply flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-gray-800/30 last:border-b-0;
+  @apply flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors last:border-b-0;
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .result-item:hover,
 .result-item.selected {
-  @apply bg-blue-600/20;
+  background-color: var(--color-bg-selected);
 }
 
 .result-icon {
-  @apply w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl flex-shrink-0;
+  @apply w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0;
+  color: var(--color-text-primary);
 }
 
 .result-content {
@@ -89,19 +155,24 @@ body {
 }
 
 .result-name {
-  @apply font-medium text-white truncate;
+  @apply font-medium truncate;
+  color: var(--color-text-primary);
 }
 
 .result-description {
-  @apply text-sm text-gray-400 truncate;
+  @apply text-sm truncate;
+  color: var(--color-text-secondary);
 }
 
 .result-folder {
-  @apply text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded flex-shrink-0;
+  @apply text-xs px-2 py-1 rounded flex-shrink-0;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-tertiary);
 }
 
 .result-has-variables {
-  @apply text-xs text-gray-500 flex-shrink-0;
+  @apply text-xs flex-shrink-0;
+  color: var(--color-text-muted);
 }
 
 /* Context modal */
@@ -110,11 +181,14 @@ body {
 }
 
 .context-modal {
-  @apply bg-gray-900 rounded-xl p-6 w-[450px] max-w-[90vw] shadow-2xl border border-gray-700;
+  @apply rounded-xl p-6 w-[450px] max-w-[90vw] shadow-2xl;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .context-modal h3 {
-  @apply text-lg font-semibold text-white mb-4;
+  @apply text-lg font-semibold mb-4;
+  color: var(--color-text-primary);
 }
 
 .variable-field {
@@ -122,15 +196,28 @@ body {
 }
 
 .variable-field label {
-  @apply block text-sm text-gray-400 mb-1;
+  @apply block text-sm mb-1;
+  color: var(--color-text-secondary);
 }
 
 .variable-field .required {
-  @apply text-red-400 ml-1;
+  @apply text-red-500 dark:text-red-400 ml-1;
 }
 
 .variable-field input {
-  @apply w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+  @apply w-full rounded-lg px-3 py-2 outline-none focus:ring-1;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.variable-field input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.variable-field input:focus {
+  border-color: var(--color-accent);
+  --tw-ring-color: var(--color-accent);
 }
 
 .modal-actions {
@@ -138,22 +225,524 @@ body {
 }
 
 .cancel-button {
-  @apply px-4 py-2 text-gray-400 hover:text-white transition-colors rounded-lg;
+  @apply px-4 py-2 transition-colors rounded-lg;
+  color: var(--color-text-secondary);
+}
+
+.cancel-button:hover {
+  color: var(--color-text-primary);
 }
 
 .confirm-button {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors;
+  @apply px-4 py-2 text-white rounded-lg transition-colors;
+  background-color: var(--color-accent);
+}
+
+.confirm-button:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.confirm-button:disabled {
+  @apply cursor-not-allowed opacity-50;
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Validation error states */
+.variable-field.has-error input {
+  @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+}
+
+.variable-field .error-message {
+  @apply block text-xs mt-1 text-red-500 dark:text-red-400;
 }
 
 /* Keyboard hints */
 .keyboard-hints {
-  @apply flex items-center justify-center gap-4 px-4 py-2 border-t border-gray-700/50 text-xs text-gray-500;
+  @apply flex items-center justify-between px-3 py-2 text-xs;
+  gap: 6px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  min-width: 0;
 }
 
 .keyboard-hint {
-  @apply flex items-center gap-1.5;
+  @apply flex items-center flex-shrink-0;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .keyboard-hint kbd {
-  @apply px-2 py-0.5 bg-gray-800 rounded text-gray-400 font-mono;
+  @apply px-1.5 py-0.5 rounded font-mono;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.prompter-logo {
+  @apply w-4 h-4 flex-shrink-0 opacity-60;
+}
+
+/* =============================================================================
+   EDITOR WINDOW STYLES
+   ============================================================================= */
+
+.editor-window {
+  @apply flex h-full;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+.editor-layout {
+  @apply flex flex-1 overflow-hidden;
+}
+
+.editor-main {
+  @apply flex flex-col flex-1 min-w-0;
+}
+
+.editor-header {
+  @apply flex items-center justify-between px-6 py-4 backdrop-blur-xl;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-secondary);
+}
+
+/* =============================================================================
+   PROMPT SIDEBAR STYLES
+   ============================================================================= */
+
+.prompt-sidebar {
+  @apply flex flex-col w-64 h-full flex-shrink-0;
+  background-color: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar-header {
+  @apply flex items-center justify-between px-4 py-3;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-title {
+  @apply text-sm font-semibold;
+  color: var(--color-text-primary);
+}
+
+.sidebar-new-btn {
+  @apply flex items-center gap-1.5 px-2 py-1 text-xs rounded-md transition-colors;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-tertiary);
+}
+
+.sidebar-new-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-accent);
+}
+
+.sidebar-search {
+  @apply flex items-center gap-2 px-3 py-2 mx-3 my-2 rounded-md;
+  background-color: var(--color-bg-tertiary);
+}
+
+.sidebar-search-icon {
+  color: var(--color-text-muted);
+}
+
+.sidebar-search-input {
+  @apply flex-1 bg-transparent text-sm outline-none;
+  color: var(--color-text-primary);
+}
+
+.sidebar-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.sidebar-tree {
+  @apply flex-1 overflow-y-auto py-2;
+}
+
+.sidebar-loading {
+  @apply p-4;
+}
+
+.sidebar-empty {
+  @apply p-4 text-center;
+  color: var(--color-text-muted);
+}
+
+.sidebar-empty p {
+  @apply text-sm mb-2;
+}
+
+.sidebar-empty-btn {
+  @apply text-xs px-3 py-1.5 rounded-md transition-colors;
+  color: var(--color-text-primary);
+  background-color: var(--color-accent);
+}
+
+.sidebar-empty-btn:hover {
+  background-color: var(--color-accent-hover);
+}
+
+/* Folder styling */
+.folder-group {
+  @apply mb-1;
+}
+
+.folder-header {
+  @apply flex items-center gap-1 w-full px-3 py-1.5 text-left text-sm transition-colors;
+  color: var(--color-text-secondary);
+}
+
+.folder-header:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+}
+
+.folder-chevron {
+  @apply flex-shrink-0 opacity-60;
+}
+
+.folder-icon {
+  @apply flex-shrink-0;
+  color: var(--color-text-muted);
+}
+
+.folder-name {
+  @apply flex-1 truncate font-medium;
+}
+
+.folder-count {
+  @apply text-xs;
+  color: var(--color-text-muted);
+}
+
+/* Prompt item styling */
+.prompt-list {
+  @apply pl-4;
+}
+
+.prompt-item {
+  @apply flex items-center gap-2 w-full px-3 py-1.5 text-left text-sm rounded-md transition-colors;
+  color: var(--color-text-secondary);
+}
+
+.prompt-item:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+}
+
+.prompt-item.selected {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-selected);
+}
+
+.prompt-icon {
+  @apply w-5 h-5 rounded flex items-center justify-center flex-shrink-0;
+}
+
+.prompt-icon svg {
+  @apply text-white;
+}
+
+.prompt-name {
+  @apply flex-1 truncate;
+}
+
+.prompt-usage {
+  @apply text-xs px-1.5 py-0.5 rounded;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-tertiary);
+}
+
+/* =============================================================================
+   SETTINGS WINDOW STYLES
+   ============================================================================= */
+
+.settings-window {
+  @apply flex flex-col h-full;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+.settings-window header {
+  @apply flex items-center justify-between px-6 py-4;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-window h1 {
+  @apply text-xl font-semibold;
+  color: var(--color-text-primary);
+}
+
+.settings-group-title {
+  @apply text-sm font-medium uppercase tracking-wider;
+  color: var(--color-text-muted);
+}
+
+.settings-label {
+  @apply text-sm font-medium;
+  color: var(--color-text-secondary);
+}
+
+.settings-description {
+  @apply text-xs mt-0.5;
+  color: var(--color-text-muted);
+}
+
+.settings-toggle-track {
+  @apply w-10 h-6 rounded-full transition-colors;
+  background-color: var(--color-bg-tertiary);
+}
+
+.settings-toggle-track.checked {
+  background-color: var(--color-accent);
+}
+
+.settings-input {
+  @apply px-3 py-2 rounded-lg text-sm;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.settings-input:focus {
+  @apply outline-none ring-2;
+  --tw-ring-color: var(--color-accent);
+  border-color: transparent;
+}
+
+.settings-kbd {
+  @apply px-2 py-1 rounded text-xs;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+}
+
+.settings-about {
+  @apply text-sm space-y-2;
+  color: var(--color-text-muted);
+}
+
+/* =============================================================================
+   ANALYTICS WINDOW STYLES
+   ============================================================================= */
+
+.analytics-window {
+  @apply flex flex-col h-full;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* =============================================================================
+   SKELETON LOADING
+   ============================================================================= */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+.result-item-skeleton {
+  @apply flex items-center gap-3 px-4 py-3;
+}
+
+.skeleton-content {
+  @apply flex-1 flex flex-col gap-2;
+}
+
+.results-list-skeleton {
+  @apply flex-1 overflow-hidden;
+}
+
+/* =============================================================================
+   EMPTY STATE
+   ============================================================================= */
+
+.empty-state {
+  @apply flex flex-col items-center justify-center py-12 px-6 text-center;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 mb-4 text-gray-600;
+}
+
+.empty-state-title {
+  @apply text-lg font-medium text-gray-400 mb-2;
+}
+
+.empty-state-description {
+  @apply text-sm text-gray-500 mb-4 max-w-xs;
+}
+
+.empty-state-action {
+  @apply px-4 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm font-medium;
+}
+
+/* =============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================= */
+
+.toast-container {
+  @apply fixed bottom-4 right-4 z-50 flex flex-col gap-2;
+}
+
+.toast {
+  @apply flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg border min-w-[300px] max-w-md;
+  animation: slideInRight 200ms ease-out;
+}
+
+.toast-success {
+  @apply bg-green-900/90 border-green-700 text-green-100;
+}
+
+.toast-error {
+  @apply bg-red-900/90 border-red-700 text-red-100;
+}
+
+.toast-warning {
+  @apply bg-yellow-900/90 border-yellow-700 text-yellow-100;
+}
+
+.toast-info {
+  @apply bg-blue-900/90 border-blue-700 text-blue-100;
+}
+
+.toast-icon {
+  @apply flex-shrink-0 w-5 h-5;
+}
+
+.toast-content {
+  @apply flex-1;
+}
+
+.toast-title {
+  @apply font-medium;
+}
+
+.toast-message {
+  @apply text-sm opacity-80;
+}
+
+.toast-dismiss {
+  @apply flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* =============================================================================
+   ANIMATIONS
+   ============================================================================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.slide-in-from-right {
+  animation-name: slideIn;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn;
+}
+
+/* =============================================================================
+   SCROLLBAR STYLING
+   ============================================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply rounded;
+  background-color: var(--color-bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded;
+  background-color: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-muted);
+}
+
+/* =============================================================================
+   FORM ELEMENT ENHANCEMENTS
+   ============================================================================= */
+
+/* Focus ring styling */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  @apply outline-none ring-2 ring-offset-2;
+  --tw-ring-color: var(--color-accent);
+  --tw-ring-offset-color: var(--color-bg-primary);
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  @apply cursor-pointer;
+  accent-color: var(--color-accent);
+}
+
+/* Select dropdown styling */
+select option {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }

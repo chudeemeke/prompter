@@ -16,6 +16,7 @@ const createMockPrompt = (overrides?: Partial<Prompt>): Prompt => ({
     { name: 'variable', default: 'default value', required: true },
   ],
   auto_paste: true,
+  is_favorite: false,
   created_at: '2025-11-30T10:00:00Z',
   updated_at: '2025-11-30T10:00:00Z',
   ...overrides,
@@ -522,7 +523,56 @@ describe('ContextModal', () => {
   });
 
   describe('Required Validation', () => {
-    it('should have required attribute on required fields', () => {
+    it('should show required indicator (*) on required fields', () => {
+      const prompt = createMockPrompt({
+        variables: [{ name: 'topic', default: '', required: true }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      // Check for required indicator
+      expect(screen.getByText('*')).toBeInTheDocument();
+    });
+
+    it('should not show required indicator on optional fields', () => {
+      const prompt = createMockPrompt({
+        variables: [{ name: 'topic', default: '', required: false }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      // Check no required indicator
+      expect(screen.queryByText('*')).not.toBeInTheDocument();
+    });
+
+    it('should disable submit button when required field is empty', () => {
+      const prompt = createMockPrompt({
+        variables: [{ name: 'topic', default: '', required: true }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const submitButton = screen.getByRole('button', { name: /use prompt/i });
+      expect(submitButton).toBeDisabled();
+    });
+
+    it('should enable submit button when required field has value', async () => {
+      const user = userEvent.setup();
       const prompt = createMockPrompt({
         variables: [{ name: 'topic', default: '', required: true }],
       });
@@ -535,23 +585,10 @@ describe('ContextModal', () => {
       );
 
       const input = screen.getByPlaceholderText('Enter topic');
-      expect(input).toHaveAttribute('required');
-    });
+      await user.type(input, 'test value');
 
-    it('should not have required attribute on optional fields', () => {
-      const prompt = createMockPrompt({
-        variables: [{ name: 'topic', default: '', required: false }],
-      });
-      render(
-        <ContextModal
-          prompt={prompt}
-          onConfirm={vi.fn()}
-          onCancel={vi.fn()}
-        />
-      );
-
-      const input = screen.getByPlaceholderText('Enter topic');
-      expect(input).not.toHaveAttribute('required');
+      const submitButton = screen.getByRole('button', { name: /use prompt/i });
+      expect(submitButton).not.toBeDisabled();
     });
 
     it('should prevent submission when required field is empty', async () => {
@@ -666,6 +703,70 @@ describe('ContextModal', () => {
       );
 
       expect(screen.getByText(/Fill in variables for "<script>alert\("xss"\)<\/script>"/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Keyboard Events', () => {
+    it('should call onCancel when Escape key is pressed', async () => {
+      const user = userEvent.setup();
+      const onCancel = vi.fn();
+      const prompt = createMockPrompt({
+        variables: [{ name: 'topic', default: 'AI', required: false }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={vi.fn()}
+          onCancel={onCancel}
+        />
+      );
+
+      const input = screen.getByDisplayValue('AI');
+      await user.type(input, '{Escape}');
+
+      expect(onCancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not submit on Enter if validation fails', async () => {
+      const user = userEvent.setup();
+      const onConfirm = vi.fn();
+      const prompt = createMockPrompt({
+        variables: [{ name: 'required_field', default: '', required: true }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={onConfirm}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const input = screen.getByPlaceholderText('Enter required_field');
+      // Input is empty and required, so Enter should not submit
+      await user.type(input, '{Enter}');
+
+      expect(onConfirm).not.toHaveBeenCalled();
+    });
+
+    it('should submit on Enter if validation passes', async () => {
+      const user = userEvent.setup();
+      const onConfirm = vi.fn();
+      const prompt = createMockPrompt({
+        variables: [{ name: 'required_field', default: '', required: true }],
+      });
+      render(
+        <ContextModal
+          prompt={prompt}
+          onConfirm={onConfirm}
+          onCancel={vi.fn()}
+        />
+      );
+
+      const input = screen.getByPlaceholderText('Enter required_field');
+      await user.type(input, 'valid value');
+      await user.keyboard('{Enter}');
+
+      expect(onConfirm).toHaveBeenCalledWith({ required_field: 'valid value' });
     });
   });
 

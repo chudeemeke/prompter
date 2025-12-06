@@ -29,9 +29,17 @@ export function SearchInput({ value, onChange, placeholder = "Search prompts..."
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="search-input"
+        aria-label="Search prompts"
+        data-testid="search-input"
       />
       {value && (
-        <button type="button" onClick={() => onChange('')} className="clear-button">
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="clear-button"
+          aria-label="Clear search"
+          title="Clear search"
+        >
           <X size={18} />
         </button>
       )}

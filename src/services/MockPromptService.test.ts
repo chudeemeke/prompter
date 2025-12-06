@@ -162,25 +162,39 @@ describe('MockPromptService', () => {
   });
 
   describe('copyAndPaste', () => {
-    it('should resolve without error', async () => {
-      await expect(service.copyAndPaste('test text', true)).resolves.toBeUndefined();
+    it('should return CopyPasteResult with clipboard_success', async () => {
+      const result = await service.copyAndPaste('test text', true);
+      expect(result.clipboard_success).toBe(true);
+      expect(result.paste_attempted).toBe(true);
+      expect(result.paste_likely_success).toBe(true);
+      expect(result.message).toBe('Copied and pasted');
     });
 
     it('should handle auto_paste true', async () => {
-      await expect(service.copyAndPaste('text', true)).resolves.toBeUndefined();
+      const result = await service.copyAndPaste('text', true);
+      expect(result.clipboard_success).toBe(true);
+      expect(result.paste_attempted).toBe(true);
+      expect(result.paste_likely_success).toBe(true);
+      expect(result.message).toBe('Copied and pasted');
     });
 
     it('should handle auto_paste false', async () => {
-      await expect(service.copyAndPaste('text', false)).resolves.toBeUndefined();
+      const result = await service.copyAndPaste('text', false);
+      expect(result.clipboard_success).toBe(true);
+      expect(result.paste_attempted).toBe(false);
+      expect(result.paste_likely_success).toBe(false);
+      expect(result.message).toBe('Copied to clipboard');
     });
 
     it('should handle empty text', async () => {
-      await expect(service.copyAndPaste('', true)).resolves.toBeUndefined();
+      const result = await service.copyAndPaste('', true);
+      expect(result.clipboard_success).toBe(true);
     });
 
     it('should handle long text', async () => {
       const longText = 'a'.repeat(10000);
-      await expect(service.copyAndPaste(longText, true)).resolves.toBeUndefined();
+      const result = await service.copyAndPaste(longText, true);
+      expect(result.clipboard_success).toBe(true);
     });
   });
 

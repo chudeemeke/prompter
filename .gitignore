@@ -56,3 +56,10 @@ src-tauri/WixTools/
 # Testing
 .vitest/
 nul
+
+# E2E Testing (Playwright)
+e2e/reports/
+e2e/test-results/
+playwright-report/
+playwright/.cache/
+test-results/

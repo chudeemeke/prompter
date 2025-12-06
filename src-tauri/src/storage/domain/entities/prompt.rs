@@ -15,6 +15,8 @@ pub struct Prompt {
     pub tags: Vec<String>,
     pub variables: Vec<Variable>,
     pub auto_paste: bool,
+    #[serde(default)]
+    pub is_favorite: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -66,6 +68,7 @@ mod tests {
             tags: vec!["test".to_string()],
             variables: vec![],
             auto_paste: false,
+            is_favorite: false,
             created_at: "2025-01-01T00:00:00Z".to_string(),
             updated_at: "2025-01-01T00:00:00Z".to_string(),
         }
