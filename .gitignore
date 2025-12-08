@@ -2,6 +2,11 @@
 node_modules/
 src-tauri/target/
 
+# Package manager lockfiles (using bun, ignore npm/yarn/pnpm)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
 # Build outputs
 dist/
 build/

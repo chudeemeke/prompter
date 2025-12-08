@@ -14,10 +14,13 @@ export function usePrompts(service: PromptService) {
   const loadPrompts = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('[usePrompts] Loading prompts...');
       const data = await service.getAllPrompts();
+      console.log('[usePrompts] Received prompts:', data.length, data);
       setPrompts(data);
       setError(null);
     } catch (err) {
+      console.error('[usePrompts] Error loading prompts:', err);
       setError(err instanceof Error ? err.message : 'Failed to load prompts');
     } finally {
       setLoading(false);

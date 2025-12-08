@@ -74,8 +74,11 @@ pub struct VariableInput {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_all_prompts() -> Result<Vec<Prompt>, String> {
+    log::info!("[get_all_prompts] Command invoked");
     let repository = FilePromptRepository::new()?;
-    repository.find_all()
+    let prompts = repository.find_all()?;
+    log::info!("[get_all_prompts] Returning {} prompts", prompts.len());
+    Ok(prompts)
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -608,6 +611,10 @@ pub struct AppConfigInfo {
     pub auto_paste: bool,
     pub close_after_paste: bool,
     pub remember_last_query: bool,
+    #[serde(default)]
+    pub remember_last_edited_prompt: bool,
+    #[serde(default)]
+    pub last_edited_prompt_id: Option<String>,
     pub auto_start: bool,
 
     // Display
@@ -636,6 +643,8 @@ impl Default for AppConfigInfo {
             auto_paste: true,
             close_after_paste: true,
             remember_last_query: false,
+            remember_last_edited_prompt: false,
+            last_edited_prompt_id: None,
             auto_start: false,
             show_in_tray: true,
             max_results: 10,

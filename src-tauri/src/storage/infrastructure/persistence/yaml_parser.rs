@@ -10,6 +10,21 @@ impl YamlParser {
         Self
     }
 
+    /// Parse a prompt file with a base directory to compute relative path for ID
+    pub fn parse_with_base(&self, path: &Path, base_dir: &Path) -> Result<Prompt, String> {
+        let mut prompt = self.parse(path)?;
+
+        // Set ID as relative path from base_dir (e.g., "Coding/my-prompt.md")
+        prompt.id = path
+            .strip_prefix(base_dir)
+            .map_err(|_| "Path is not under base directory")?
+            .to_str()
+            .ok_or("Invalid path encoding")?
+            .replace('\\', "/"); // Normalize path separators for cross-platform consistency
+
+        Ok(prompt)
+    }
+
     pub fn parse(&self, path: &Path) -> Result<Prompt, String> {
         let content = std::fs::read_to_string(path)
             .map_err(|e| format!("Failed to read file: {}", e))?;
@@ -32,7 +47,8 @@ impl YamlParser {
         // Extract content (everything after second ---)
         prompt.content = parts[2..].join("---").trim().to_string();
 
-        // Set ID from relative path
+        // Set ID from filename only (for backwards compatibility)
+        // Use parse_with_base for proper relative path IDs
         prompt.id = path
             .file_name()
             .and_then(|s| s.to_str())

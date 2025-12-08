@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Save, X, Keyboard, Palette, FolderOpen,
-  Monitor, Shield, RotateCcw
+  Monitor, Shield, RotateCcw, BarChart3
 } from 'lucide-react';
 import type { PromptService } from '../../services/PromptService';
 import type { AppConfig, Theme } from '../../lib/types';
@@ -38,6 +38,8 @@ const DEFAULT_CONFIG: AppConfig = {
   auto_paste: true,
   close_after_paste: true,
   remember_last_query: false,
+  remember_last_edited_prompt: false,
+  last_edited_prompt_id: undefined,
   auto_start: false,
   show_in_tray: true,
   max_results: 10,
@@ -234,6 +236,12 @@ export function SettingsWindow({ service, onClose }: SettingsWindowProps) {
               checked={config.remember_last_query}
               onChange={(v) => updateConfig('remember_last_query', v)}
             />
+            <SettingsToggle
+              label="Remember last edited prompt"
+              description="Open the last edited prompt when launching Editor without selection"
+              checked={config.remember_last_edited_prompt}
+              onChange={(v) => updateConfig('remember_last_edited_prompt', v)}
+            />
           </SettingsGroup>
 
           <SettingsGroup title="Startup">
@@ -425,6 +433,19 @@ export function SettingsWindow({ service, onClose }: SettingsWindowProps) {
               checked={config.analytics_enabled}
               onChange={(v) => updateConfig('analytics_enabled', v)}
             />
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<BarChart3 size={16} />}
+              onClick={() => {
+                service.openAnalyticsWindow().catch(err => {
+                  console.error('[SettingsWindow] Failed to open analytics:', err);
+                  toast.error('Error', 'Failed to open analytics window');
+                });
+              }}
+            >
+              View Analytics Dashboard
+            </Button>
           </SettingsGroup>
 
           <SettingsGroup title="Language">

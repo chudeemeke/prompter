@@ -221,6 +221,8 @@ export interface AppConfig {
   auto_paste: boolean;
   close_after_paste: boolean;
   remember_last_query: boolean;
+  remember_last_edited_prompt: boolean;
+  last_edited_prompt_id?: string;
   auto_start: boolean;
 
   // Display

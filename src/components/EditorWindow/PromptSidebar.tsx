@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   Search, Plus, ChevronRight, ChevronDown,
-  Folder, FolderOpen, FileText
+  Folder, FolderOpen
 } from 'lucide-react';
 import type { Prompt, PromptFolder } from '../../lib/types';
 import type { PromptService } from '../../services/PromptService';
+import { DynamicIcon } from '../shared/IconPicker';
 
 // =============================================================================
 // TYPES
@@ -50,10 +51,13 @@ export function PromptSidebar({
     const loadData = async () => {
       try {
         setLoading(true);
+        console.log('[PromptSidebar] Loading data...');
         const [promptsData, foldersData] = await Promise.all([
           service.getAllPrompts(),
           service.getFolders(),
         ]);
+        console.log('[PromptSidebar] Received prompts:', promptsData.length, promptsData);
+        console.log('[PromptSidebar] Received folders:', foldersData.length, foldersData);
         setPrompts(promptsData);
         setFolders(foldersData);
         // Expand all folders by default
@@ -236,9 +240,9 @@ export function PromptSidebar({
                   >
                     <span
                       className="prompt-icon"
-                      style={{ backgroundColor: prompt.color || '#6366f1' }}
+                      style={{ '--prompt-color': prompt.color || '#6B7280' } as React.CSSProperties}
                     >
-                      <FileText size={12} />
+                      <DynamicIcon icon={prompt.icon || 'file-text'} size={12} className="text-white" />
                     </span>
                     <span className="prompt-name">{prompt.name}</span>
                   </button>

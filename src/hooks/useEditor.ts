@@ -77,11 +77,28 @@ export function useEditor({
   const [isLoading, setIsLoading] = useState(false);
 
   // ---------------------------------------------------------------------------
+  // SYNC MODE WITH PROPS
+  // ---------------------------------------------------------------------------
+
+  // When promptId changes, update mode accordingly
+  useEffect(() => {
+    if (promptId) {
+      setMode('edit');
+    } else {
+      setMode('create');
+      setPrompt(null);
+      setDraft(DEFAULT_DRAFT);
+      setIsDirty(false);
+      setErrors([]);
+    }
+  }, [promptId]);
+
+  // ---------------------------------------------------------------------------
   // LOAD PROMPT
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    if (promptId && mode !== 'create') {
+    if (promptId) {
       setIsLoading(true);
       service.getPrompt(promptId)
         .then((p) => {
@@ -101,13 +118,15 @@ export function useEditor({
         })
         .catch((e) => {
           console.error('[useEditor] Failed to load prompt:', e);
-          setErrors([{ field: 'general', message: `Failed to load prompt: ${e.message}` }]);
+          // Tauri errors may be strings or objects with different structures
+          const errorMessage = typeof e === 'string' ? e : (e?.message || e?.toString() || 'Unknown error');
+          setErrors([{ field: 'general', message: `Failed to load prompt: ${errorMessage}` }]);
         })
         .finally(() => {
           setIsLoading(false);
         });
     }
-  }, [promptId, mode, service]);
+  }, [promptId, service]);
 
   // ---------------------------------------------------------------------------
   // VALIDATION

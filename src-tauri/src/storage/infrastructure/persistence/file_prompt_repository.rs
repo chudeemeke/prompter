@@ -70,17 +70,34 @@ impl FilePromptRepository {
 
 impl PromptRepository for FilePromptRepository {
     fn find_all(&self) -> Result<Vec<Prompt>, String> {
-        let files = self.list_prompt_files()?;
-        let mut prompts = Vec::new();
+        log::info!("[FilePromptRepository] find_all() called, prompts_dir: {:?}", self.prompts_dir);
 
-        for file in files {
-            match self.parser.parse(&file) {
-                Ok(prompt) => prompts.push(prompt),
+        let files = self.list_prompt_files()?;
+        log::info!("[FilePromptRepository] Found {} .md files", files.len());
+
+        let mut prompts = Vec::new();
+        let mut parse_errors = 0;
+
+        for file in &files {
+            // Use parse_with_base to set ID as relative path from prompts_dir
+            match self.parser.parse_with_base(file, &self.prompts_dir) {
+                Ok(prompt) => {
+                    log::debug!("[FilePromptRepository] Parsed: {} -> {}", file.display(), prompt.name);
+                    prompts.push(prompt);
+                }
                 Err(e) => {
-                    eprintln!("Warning: Failed to parse {}: {}", file.display(), e);
+                    log::warn!("[FilePromptRepository] Failed to parse {}: {}", file.display(), e);
+                    parse_errors += 1;
                 }
             }
         }
+
+        log::info!(
+            "[FilePromptRepository] Result: {} prompts loaded, {} parse errors out of {} files",
+            prompts.len(),
+            parse_errors,
+            files.len()
+        );
 
         Ok(prompts)
     }
@@ -90,7 +107,8 @@ impl PromptRepository for FilePromptRepository {
         if !path.exists() {
             return Err(format!("Prompt not found: {}", id));
         }
-        self.parser.parse(&path)
+        // Use parse_with_base to ensure consistent ID format
+        self.parser.parse_with_base(&path, &self.prompts_dir)
     }
 
     fn save(&self, prompt: &Prompt) -> Result<(), String> {

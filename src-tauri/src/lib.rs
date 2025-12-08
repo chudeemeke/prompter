@@ -3,7 +3,7 @@ mod commands;
 mod storage;
 mod os;
 
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{TrayIconBuilder, MouseButton, MouseButtonState};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
@@ -11,65 +11,40 @@ use os::infrastructure::WindowsFocusTracker;
 use os::domain::ports::WindowManager;
 use std::sync::Arc;
 
-/// Hotkey configurations to try (in order of preference)
-fn get_hotkey_candidates() -> Vec<(Shortcut, &'static str)> {
+/// The ONE hotkey for Prompter - F9
+/// Professional apps use a single, memorable hotkey rather than fallback chains
+const PROMPTER_HOTKEY: Code = Code::F9;
+const PROMPTER_HOTKEY_NAME: &str = "F9";
+
+/// Legacy hotkeys that may have been registered by previous versions
+/// We unregister ALL of these on startup to ensure clean state
+fn get_legacy_hotkeys() -> Vec<Shortcut> {
     vec![
-        // Primary: F9 (function keys rarely used)
-        (
-            Shortcut::new(None, Code::F9),
-            "F9"
-        ),
-        // Fallback 1: F11 (fullscreen key, but might be available)
-        (
-            Shortcut::new(None, Code::F11),
-            "F11"
-        ),
-        // Fallback 2: F12 (dev tools, but might be available)
-        (
-            Shortcut::new(None, Code::F12),
-            "F12"
-        ),
-        // Fallback 3: Ctrl+Shift+Space
-        (
-            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space),
-            "Ctrl+Shift+Space"
-        ),
-        // Fallback 4: Ctrl+Alt+Space
-        (
-            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::Space),
-            "Ctrl+Alt+Space"
-        ),
-        // Fallback 5: F10
-        (
-            Shortcut::new(None, Code::F10),
-            "F10"
-        ),
-        // Fallback 6: Ctrl+Shift+K
-        (
-            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyK),
-            "Ctrl+Shift+K"
-        ),
-        // Fallback 7: Ctrl+Shift+;
-        (
-            Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Semicolon),
-            "Ctrl+Shift+;"
-        ),
-        // Fallback 8: Alt+P
-        (
-            Shortcut::new(Some(Modifiers::ALT), Code::KeyP),
-            "Alt+P"
-        ),
-        // Fallback 9: Ctrl+`
-        (
-            Shortcut::new(Some(Modifiers::CONTROL), Code::Backquote),
-            "Ctrl+`"
-        ),
+        Shortcut::new(None, Code::F9),
+        Shortcut::new(None, Code::F10),
+        Shortcut::new(None, Code::F11),
+        Shortcut::new(None, Code::F12),
+        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Space),
+        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::Space),
+        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyK),
+        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::Semicolon),
+        Shortcut::new(Some(Modifiers::ALT), Code::KeyP),
+        Shortcut::new(Some(Modifiers::CONTROL), Code::Backquote),
     ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    // Single instance - prevent multiple tray icons
+    .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+      log::info!("[SingleInstance] Second instance detected, focusing existing window");
+      // Focus the main window if it exists
+      if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.set_focus();
+      }
+    }))
     .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_clipboard_manager::init())
     .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -166,7 +141,7 @@ pub fn run() {
                 let _ = window.show();
                 let _ = window.set_focus();
               } else {
-                // Create new editor window
+                // Create new editor window (no HWND registration needed - process-based detection)
                 let _ = tauri::WebviewWindowBuilder::new(
                   app,
                   "editor",
@@ -187,7 +162,7 @@ pub fn run() {
                 let _ = window.show();
                 let _ = window.set_focus();
               } else {
-                // Create new settings window
+                // Create new settings window (no HWND registration needed - process-based detection)
                 let _ = tauri::WebviewWindowBuilder::new(
                   app,
                   "settings",
@@ -222,60 +197,95 @@ pub fn run() {
         })
         .build(app)?;
 
-      // Try to register global hotkeys with fallback
-      let candidates = get_hotkey_candidates();
+      // CLEANUP: Unregister ALL legacy hotkeys from previous versions
+      // This ensures a clean slate and prevents hotkey conflicts
+      log::info!("Cleaning up legacy hotkeys...");
+      for legacy_shortcut in get_legacy_hotkeys() {
+        let _ = app.global_shortcut().unregister(legacy_shortcut);
+      }
+      log::info!("Legacy hotkey cleanup complete");
+
+      // Register the ONE hotkey: F9
       let app_handle = app.handle().clone();
       let window_manager = Arc::new(WindowsFocusTracker::new());
+      let shortcut = Shortcut::new(None, PROMPTER_HOTKEY);
 
-      let mut registered_shortcut: Option<(&'static str, Shortcut)> = None;
+      // Set up the hotkey handler
+      let handle_clone = app_handle.clone();
+      let wm_clone = window_manager.clone();
 
-      for (shortcut, name) in &candidates {
-        // Unregister first in case it's registered from a previous crash
-        let _ = app.global_shortcut().unregister(*shortcut);
+      if let Err(e) = app.global_shortcut().on_shortcut(shortcut, move |_app, _shortcut, _event| {
+        if let Some(window) = handle_clone.get_webview_window("main") {
+          // Remember current window before showing Prompter
+          let _ = wm_clone.remember_current_window();
 
-        // Set up handler (does not actually register yet)
-        let handle_clone = app_handle.clone();
-        let wm_clone = window_manager.clone();
+          // Show and focus window
+          let _ = window.show();
+          let _ = window.set_focus();
 
-        if let Err(e) = app.global_shortcut().on_shortcut(*shortcut, move |_app, _shortcut, _event| {
-          if let Some(window) = handle_clone.get_webview_window("main") {
-            // Remember current window before showing Prompter
-            let _ = wm_clone.remember_current_window();
-
-            // Show and focus window
-            let _ = window.show();
-            let _ = window.set_focus();
-
-            // Emit event to frontend to focus search input
-            let _ = window.emit("focus-search", ());
-          }
-        }) {
-          log::warn!("Failed to set up handler for {}: {}", name, e);
-          continue;
+          // Emit event to frontend to focus search input
+          let _ = window.emit("focus-search", ());
         }
-
-        // Try to register the shortcut
-        match app.global_shortcut().register(*shortcut) {
-          Ok(_) => {
-            log::info!("Successfully registered global hotkey: {}", name);
-            registered_shortcut = Some((*name, *shortcut));
-            break;
-          }
-          Err(e) => {
-            log::warn!("Failed to register {}: {}. Trying next fallback...", name, e);
-          }
-        }
+      }) {
+        log::error!("Failed to set up hotkey handler for {}: {}", PROMPTER_HOTKEY_NAME, e);
       }
 
-      if registered_shortcut.is_none() {
-        log::error!("Failed to register any global hotkey. The app will still work but no hotkey will trigger the window.");
+      // Register the hotkey
+      match app.global_shortcut().register(shortcut) {
+        Ok(_) => {
+          log::info!("Successfully registered global hotkey: {}", PROMPTER_HOTKEY_NAME);
+        }
+        Err(e) => {
+          log::error!("Failed to register hotkey {}: {}. Use the system tray icon instead.", PROMPTER_HOTKEY_NAME, e);
+        }
       }
 
       // App starts minimized to tray. Use hotkey or tray icon to show.
+      // Note: No HWND registration needed - we use process-based detection to distinguish
+      // internal (Prompter-to-Prompter) vs external (Prompter-to-other-app) focus changes.
       log::info!("Prompter started - use hotkey or tray icon to show window");
 
       Ok(())
     })
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    .build(tauri::generate_context!())
+    .expect("error while building tauri application")
+    .run(|app_handle, event| {
+      match event {
+        // Clean up hotkey on app exit
+        RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+          log::info!("App exiting - unregistering hotkey...");
+          let shortcut = Shortcut::new(None, PROMPTER_HOTKEY);
+          if let Err(e) = app_handle.global_shortcut().unregister(shortcut) {
+            log::warn!("Failed to unregister hotkey on exit: {}", e);
+          } else {
+            log::info!("Hotkey {} unregistered successfully", PROMPTER_HOTKEY_NAME);
+          }
+        }
+        // Handle window events to track focus changes
+        RunEvent::WindowEvent { label, event: window_event, .. } => {
+          // Track blur events from ANY Prompter window (main, editor, settings)
+          // Only update saved HWND if focus goes to an EXTERNAL app (not another Prompter window)
+          if let WindowEvent::Focused(false) = window_event {
+            let window_label = label.clone();
+            // Small delay to let Windows update the foreground window
+            std::thread::spawn(move || {
+              std::thread::sleep(std::time::Duration::from_millis(50));
+              let wm = WindowsFocusTracker::new();
+              match wm.remember_if_external() {
+                Ok(true) => {
+                  log::info!("Updated saved window on {} blur (external focus change)", window_label);
+                }
+                Ok(false) => {
+                  log::info!("Ignored focus change from {} (internal Prompter window switch)", window_label);
+                }
+                Err(e) => {
+                  log::warn!("Failed to check external focus on {} blur: {}", window_label, e);
+                }
+              }
+            });
+          }
+        }
+        _ => {}
+      }
+    });
 }

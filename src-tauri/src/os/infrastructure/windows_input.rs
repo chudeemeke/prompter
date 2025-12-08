@@ -242,14 +242,14 @@ impl WindowsInputSimulator {
                 false
             };
 
-            // Small delay after attachment
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            // Small delay after attachment (reduced from 50ms to match PromptLight timing)
+            std::thread::sleep(std::time::Duration::from_millis(20));
 
             // Send Ctrl+V with individual events and delays
             let result = self.simulate_ctrl_v_sequential();
 
             // Small delay before detachment
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            std::thread::sleep(std::time::Duration::from_millis(20));
 
             // Detach thread input if we attached
             if attached {
@@ -278,7 +278,7 @@ impl InputSimulator for WindowsInputSimulator {
             Ok(()) => {
                 log::info!("simulate_paste: SendInput completed");
                 sendinput_success = true;
-                std::thread::sleep(std::time::Duration::from_millis(50));
+                std::thread::sleep(std::time::Duration::from_millis(20));
             }
             Err(e) => {
                 log::warn!("simulate_paste: SendInput failed: {}", e);
@@ -292,7 +292,7 @@ impl InputSimulator for WindowsInputSimulator {
             Ok(()) => {
                 log::info!("simulate_paste: SendMessage keys completed");
                 sendmessage_success = true;
-                std::thread::sleep(std::time::Duration::from_millis(50));
+                std::thread::sleep(std::time::Duration::from_millis(20));
             }
             Err(e) => {
                 log::warn!("simulate_paste: SendMessage keys failed: {}", e);

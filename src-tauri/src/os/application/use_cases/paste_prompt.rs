@@ -38,8 +38,8 @@ impl PastePromptUseCase {
         }
         log::info!("PastePromptUseCase: Clipboard write successful");
 
-        // Step 2: Small delay for clipboard sync
-        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+        // Step 2: Small delay for clipboard sync (20ms matches macOS PromptLight)
+        tokio::time::sleep(tokio::time::Duration::from_millis(20)).await;
 
         // Step 2a: Verify clipboard content
         log::info!("PastePromptUseCase: Verifying clipboard content");
@@ -86,9 +86,12 @@ impl PastePromptUseCase {
         let mut paste_result_ok = false;
 
         if auto_paste {
-            // Wait for target window to be ready (150ms works better for apps like Notepad++)
+            // Wait for target window to be ready
+            // 100ms is needed for Electron apps (VS Code, ChatGPT desktop) which have
+            // complex window hierarchies and slower focus handling than native apps.
+            // macOS PromptLight uses 50ms but Windows needs more time for Electron.
             log::info!("PastePromptUseCase: Waiting for target window to be ready...");
-            tokio::time::sleep(tokio::time::Duration::from_millis(150)).await;
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
             log::info!("PastePromptUseCase: Simulating paste (Ctrl+V) in blocking context");
             let input_simulator = Arc::clone(&self.input_simulator);

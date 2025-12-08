@@ -4,7 +4,7 @@ use crate::os::domain::ports::WindowManager;
 use crate::os::domain::CopyPasteResult;
 use crate::os::infrastructure::{TauriClipboardAdapter, WindowsFocusTracker, WindowsInputSimulator};
 use std::sync::Arc;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 /// Copy text, hide window, restore focus, optionally paste
 /// Returns detailed result about what succeeded/failed
@@ -114,11 +114,14 @@ pub async fn open_editor_window(
         // Update URL and show existing window
         window.navigate(url.parse().map_err(|e| format!("Invalid URL: {}", e))?)
             .map_err(|e| format!("Navigate error: {}", e))?;
+        // Emit event for React to re-parse URL params (fixes stale memoization)
+        window.emit("url-changed", ())
+            .map_err(|e| format!("Emit error: {}", e))?;
         window.show().map_err(|e| format!("Show error: {}", e))?;
         window.set_focus().map_err(|e| format!("Focus error: {}", e))?;
     } else {
-        // Create new window
-        let _window = tauri::WebviewWindowBuilder::new(
+        // Create new window (no HWND registration needed - process-based detection)
+        tauri::WebviewWindowBuilder::new(
             &app,
             "editor",
             tauri::WebviewUrl::App(url.into())
@@ -145,8 +148,8 @@ pub async fn open_settings_window(app: tauri::AppHandle) -> Result<(), String> {
         window.show().map_err(|e| format!("Show error: {}", e))?;
         window.set_focus().map_err(|e| format!("Focus error: {}", e))?;
     } else {
-        // Create new window
-        let _window = tauri::WebviewWindowBuilder::new(
+        // Create new window (no HWND registration needed - process-based detection)
+        tauri::WebviewWindowBuilder::new(
             &app,
             "settings",
             tauri::WebviewUrl::App("/settings".into())
@@ -173,8 +176,8 @@ pub async fn open_analytics_window(app: tauri::AppHandle) -> Result<(), String> 
         window.show().map_err(|e| format!("Show error: {}", e))?;
         window.set_focus().map_err(|e| format!("Focus error: {}", e))?;
     } else {
-        // Create new window
-        let _window = tauri::WebviewWindowBuilder::new(
+        // Create new window (no HWND registration needed - process-based detection)
+        tauri::WebviewWindowBuilder::new(
             &app,
             "analytics",
             tauri::WebviewUrl::App("/analytics".into())

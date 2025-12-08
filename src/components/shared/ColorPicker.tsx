@@ -63,8 +63,8 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
               className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute z-20 top-full mt-2 p-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl">
-              <div className="grid grid-cols-6 gap-1">
+            <div className="absolute z-20 top-full mt-2 p-3 bg-gray-800 border border-gray-700 rounded-lg shadow-xl">
+              <div className="grid grid-cols-4 gap-3">
                 {COLORS.map(({ name, value: colorValue }) => (
                   <button
                     key={colorValue}
@@ -74,7 +74,7 @@ export function ColorPicker({ label, value, onChange }: ColorPickerProps) {
                       setIsOpen(false);
                     }}
                     className={`
-                      w-8 h-8 rounded-full transition-transform hover:scale-110
+                      w-10 h-10 rounded-full transition-transform hover:scale-110 shadow-md
                       ${value === colorValue ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-800' : ''}
                     `}
                     style={{ backgroundColor: colorValue }}

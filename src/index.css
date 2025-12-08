@@ -68,14 +68,18 @@
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 #root {
   width: 100%;
-  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Window container */
@@ -287,9 +291,10 @@ body {
    ============================================================================= */
 
 .editor-window {
-  @apply flex h-full;
+  @apply flex w-full h-full;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  min-height: 0; /* Allow shrinking in flex context */
 }
 
 .editor-layout {
@@ -437,6 +442,7 @@ body {
 
 .prompt-icon {
   @apply w-5 h-5 rounded flex items-center justify-center flex-shrink-0;
+  background-color: var(--prompt-color, #6B7280);
 }
 
 .prompt-icon svg {
@@ -458,9 +464,10 @@ body {
    ============================================================================= */
 
 .settings-window {
-  @apply flex flex-col h-full;
+  @apply flex flex-col w-full h-full;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  min-height: 0; /* Allow shrinking in flex context */
 }
 
 .settings-window header {
@@ -526,9 +533,10 @@ body {
    ============================================================================= */
 
 .analytics-window {
-  @apply flex flex-col h-full;
+  @apply flex flex-col w-full h-full;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  min-height: 0; /* Allow shrinking in flex context */
 }
 
 /* =============================================================================

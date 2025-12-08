@@ -19,9 +19,11 @@ import type { PromptService, CreatePromptInput, UpdatePromptInput } from './Prom
 export class MockPromptService implements PromptService {
   private prompts: Prompt[] = [...mockPrompts];
   private folders: PromptFolder[] = [
-    { id: 'coding', name: 'Coding', prompt_count: 2, created_at: new Date().toISOString() },
-    { id: 'writing', name: 'Writing', prompt_count: 1, created_at: new Date().toISOString() },
-    { id: 'research', name: 'Research', prompt_count: 0, created_at: new Date().toISOString() },
+    { id: 'Coding', name: 'Coding', prompt_count: 1, created_at: new Date().toISOString() },
+    { id: 'Writing', name: 'Writing', prompt_count: 1, created_at: new Date().toISOString() },
+    { id: 'Research', name: 'Research', prompt_count: 1, created_at: new Date().toISOString() },
+    { id: 'Work', name: 'Work', prompt_count: 1, created_at: new Date().toISOString() },
+    { id: 'Creative', name: 'Creative', prompt_count: 1, created_at: new Date().toISOString() },
   ];
   private versions: Map<string, PromptVersion[]> = new Map();
   private usageStats: Map<string, UsageStats> = new Map();
@@ -33,6 +35,8 @@ export class MockPromptService implements PromptService {
     auto_paste: true,
     close_after_paste: true,
     remember_last_query: false,
+    remember_last_edited_prompt: false,
+    last_edited_prompt_id: undefined,
     auto_start: false,
     show_in_tray: true,
     max_results: 10,

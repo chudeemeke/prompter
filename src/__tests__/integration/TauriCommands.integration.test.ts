@@ -93,6 +93,8 @@ const createMockConfig = (): AppConfig => ({
   auto_paste: true,
   close_after_paste: true,
   remember_last_query: false,
+  remember_last_edited_prompt: false,
+  last_edited_prompt_id: undefined,
   auto_start: false,
   show_in_tray: true,
   max_results: 10,

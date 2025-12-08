@@ -287,8 +287,8 @@ export function IconPicker({ label, value, onChange }: IconPickerProps) {
               className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute z-20 top-full mt-2 p-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl">
-              <div className="grid grid-cols-6 gap-1">
+            <div className="absolute z-20 top-full mt-2 p-3 bg-gray-800 border border-gray-700 rounded-lg shadow-xl">
+              <div className="grid grid-cols-5 gap-3">
                 {PICKER_ICONS.map(({ name, component: Icon }) => (
                   <button
                     key={name}
@@ -298,10 +298,10 @@ export function IconPicker({ label, value, onChange }: IconPickerProps) {
                       setIsOpen(false);
                     }}
                     className={`
-                      p-2 rounded-lg transition-colors
+                      p-2.5 rounded-lg transition-all
                       ${value === name
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                        ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                        : 'text-gray-300 hover:bg-gray-700/80 hover:text-white hover:scale-105'
                       }
                     `}
                     title={name}

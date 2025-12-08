@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Save, X, Plus, Trash2, Copy,
   FileText, Tag, Settings2, History
 } from 'lucide-react';
 import { useEditor, PromptDraft } from '../../hooks/useEditor';
 import type { PromptService } from '../../services/PromptService';
-import type { EditorMode, PromptFolder, PromptVersion } from '../../lib/types';
+import type { EditorMode, PromptFolder, PromptVersion, AppConfig } from '../../lib/types';
 import {
   Button, Input, Textarea, Select, TagInput,
   IconPicker, ColorPicker, Tabs, TabPanel,
@@ -49,15 +49,63 @@ export function EditorWindow({
   const [loadingVersions, setLoadingVersions] = useState(false);
   const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(initialPromptId);
   const [currentMode, setCurrentMode] = useState<EditorMode>(initialPromptId ? 'edit' : initialMode);
+  const configRef = useRef<AppConfig | null>(null);
+  const initialLoadDone = useRef(false);
+
+  // Load config and apply "remember last edited" setting if no explicit promptId
+  useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
+    // Only apply "remember last edited" if no explicit promptId was provided
+    if (!initialPromptId) {
+      service.getConfig()
+        .then((config) => {
+          configRef.current = config;
+          if (config.remember_last_edited_prompt && config.last_edited_prompt_id) {
+            setSelectedPromptId(config.last_edited_prompt_id);
+            setCurrentMode('edit');
+          }
+        })
+        .catch(e => console.error('[EditorWindow] Failed to load config:', e));
+    } else {
+      // Still load config for later use when saving
+      service.getConfig()
+        .then((config) => { configRef.current = config; })
+        .catch(e => console.error('[EditorWindow] Failed to load config:', e));
+    }
+  }, [initialPromptId, service]);
 
   const editor = useEditor({
     service,
     promptId: selectedPromptId,
     mode: currentMode,
-    onSave: (prompt) => {
+    onSave: async (prompt) => {
       toast.success('Saved', `"${prompt.name}" saved successfully`);
       setSelectedPromptId(prompt.id);
       setCurrentMode('edit');
+
+      // Update last_edited_prompt_id in config
+      try {
+        const currentConfig = configRef.current || await service.getConfig();
+        await service.updateConfig({
+          ...currentConfig,
+          last_edited_prompt_id: prompt.id,
+        });
+        configRef.current = { ...currentConfig, last_edited_prompt_id: prompt.id };
+      } catch (e) {
+        console.error('[EditorWindow] Failed to update last_edited_prompt_id:', e);
+      }
+
+      // Notify other windows (Spotlight, etc.) that prompts have changed
+      if (window.__TAURI_INTERNALS__) {
+        import('@tauri-apps/api/event').then(({ emit }) => {
+          emit('prompts-changed', { promptId: prompt.id });
+        }).catch(err => {
+          console.error('[EditorWindow] Failed to emit prompts-changed event:', err);
+        });
+      }
+
       onSave?.();
     },
     onClose,
@@ -151,7 +199,9 @@ export function EditorWindow({
 
   const folderOptions = [
     { value: '', label: 'No folder' },
-    ...folders.map(f => ({ value: f.id, label: f.name })),
+    ...folders
+      .filter(f => f.id && f.name && f.name.trim() !== '')
+      .map(f => ({ value: f.id, label: f.name })),
   ];
 
   const tabs = [
@@ -232,7 +282,15 @@ export function EditorWindow({
         </div>
       )}
 
+      {/* Loading State */}
+      {editor.isLoading && (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        </div>
+      )}
+
       {/* Tabs */}
+      {!editor.isLoading && (
       <Tabs
         tabs={tabs}
         defaultTab="content"
@@ -407,6 +465,7 @@ Use {{variable_name}} for dynamic values."
           )}
         </TabPanel>
       </Tabs>
+      )}
       </div>
 
       {/* Discard Dialog */}

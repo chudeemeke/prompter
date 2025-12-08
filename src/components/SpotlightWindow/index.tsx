@@ -19,8 +19,26 @@ interface SpotlightWindowProps {
  * Manages state and business logic, delegates presentation to child components
  */
 export function SpotlightWindow({ service }: SpotlightWindowProps) {
-  const { prompts, loading, error } = usePrompts(service);
+  const { prompts, loading, error, reload } = usePrompts(service);
   const state = useSpotlightState(service);
+
+  // Listen for prompt changes from other windows (Editor, etc.)
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    // Only set up listener in Tauri environment
+    if (window.__TAURI_INTERNALS__) {
+      import('@tauri-apps/api/event').then(({ listen }) => {
+        listen('prompts-changed', () => {
+          reload();
+        }).then(fn => { unlisten = fn; });
+      }).catch(err => {
+        console.error('[SpotlightWindow] Failed to set up event listener:', err);
+      });
+    }
+
+    return () => { unlisten?.(); };
+  }, [reload]);
 
   // Debounce search query to reduce re-renders during fast typing
   const debouncedQuery = useDebounce(state.query, 150);

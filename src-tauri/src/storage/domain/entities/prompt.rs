@@ -6,19 +6,36 @@ pub struct Prompt {
     #[serde(default)]
     pub id: String,
     pub name: String,
+    #[serde(default)]
     pub description: String,
     #[serde(default)]
     pub content: String,
+    #[serde(default)]
     pub folder: String,
+    #[serde(default = "default_icon")]
     pub icon: String,
+    #[serde(default = "default_color")]
     pub color: String,
+    #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
     pub variables: Vec<Variable>,
+    #[serde(default)]
     pub auto_paste: bool,
     #[serde(default)]
     pub is_favorite: bool,
+    #[serde(default)]
     pub created_at: String,
+    #[serde(default)]
     pub updated_at: String,
+}
+
+fn default_icon() -> String {
+    "file-text".to_string()
+}
+
+fn default_color() -> String {
+    "#6B7280".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
